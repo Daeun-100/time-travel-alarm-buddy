@@ -1,24 +1,51 @@
-
 import React, { useState } from 'react';
 import { Clock, Plus, Bell } from 'lucide-react';
 import { useSchedule } from '@/hooks/useSchedule';
+import { useAlarm } from '@/hooks/useAlarm';
 import ScheduleForm from '@/components/ScheduleForm';
 import ScheduleList from '@/components/ScheduleList';
 import { Button } from '@/components/ui/button';
-import { TransportType } from '@/types/schedule';
+import { TransportType, Weekday, Schedule } from '@/types/schedule';
 
 const Index = () => {
-  const { schedules, addSchedule, deleteSchedule } = useSchedule();
+  const { schedules, addSchedule, deleteSchedule, updateSchedule, toggleScheduleActive } = useSchedule();
+  const { testAlarm, requestPermission, hasPermission } = useAlarm(schedules);
   const [showForm, setShowForm] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
 
   const handleAddSchedule = (
     destination: string,
     arrivalTime: string,
     transportType: TransportType,
-    preparationTime: number
+    preparationTime: number,
+    weekdays?: Weekday[],
+    selectedDates?: Date[]
   ) => {
-    addSchedule(destination, arrivalTime, transportType, preparationTime);
+    if (editingSchedule) {
+      updateSchedule(editingSchedule.id, destination, arrivalTime, transportType, preparationTime, weekdays, selectedDates);
+      setEditingSchedule(null);
+    } else {
+      addSchedule(destination, arrivalTime, transportType, preparationTime, weekdays, selectedDates);
+    }
     setShowForm(false);
+  };
+
+  const handleEditSchedule = (schedule: Schedule) => {
+    setEditingSchedule(schedule);
+    setShowForm(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingSchedule(null);
+    setShowForm(false);
+  };
+
+  const handleTestAlarm = (schedule: Schedule, type: 'preparation' | 'departure') => {
+    testAlarm(schedule, type);
+  };
+
+  const handleRequestPermission = async () => {
+    await requestPermission();
   };
 
   return (
@@ -37,9 +64,22 @@ const Index = () => {
               </div>
             </div>
             
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Bell size={16} />
-              <span>총 {schedules.length}개 일정</span>
+            <div className="flex items-center space-x-4">
+              {!hasPermission && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRequestPermission}
+                  className="text-xs"
+                >
+                  <Bell size={14} className="mr-1" />
+                  알림 권한
+                </Button>
+              )}
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <Bell size={16} />
+                <span>총 {schedules.length}개 일정</span>
+              </div>
             </div>
           </div>
         </div>
@@ -67,10 +107,21 @@ const Index = () => {
               </div>
             ) : (
               <div>
-                <ScheduleForm onSubmit={handleAddSchedule} />
+                <ScheduleForm 
+                  onSubmit={handleAddSchedule}
+                  initialData={editingSchedule ? {
+                    destination: editingSchedule.destination,
+                    arrivalTime: editingSchedule.arrivalTime,
+                    transportType: editingSchedule.transportType,
+                    preparationTime: editingSchedule.preparationTime,
+                    weekdays: editingSchedule.weekdays,
+                    selectedDates: editingSchedule.selectedDates
+                  } : undefined}
+                  submitLabel={editingSchedule ? '일정 수정' : '일정 등록'}
+                />
                 <Button 
                   variant="ghost" 
-                  onClick={() => setShowForm(false)}
+                  onClick={handleCancelEdit}
                   className="w-full mt-4 text-gray-600"
                 >
                   취소
@@ -96,6 +147,17 @@ const Index = () => {
                 <div>• 지연 시간 자동 추가</div>
               </div>
             </div>
+
+            {/* Alarm Info */}
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <h3 className="font-semibold text-orange-900 mb-2">🔔 알람 기능</h3>
+              <div className="text-orange-800 text-xs space-y-1">
+                <div>• 준비 시작 시간 알람</div>
+                <div>• 출발 시간 알람</div>
+                <div>• 브라우저 알림 + 소리</div>
+                <div>• 각 일정별 활성화/비활성화</div>
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Schedule List */}
@@ -103,6 +165,9 @@ const Index = () => {
             <ScheduleList 
               schedules={schedules}
               onDeleteSchedule={deleteSchedule}
+              onEditSchedule={handleEditSchedule}
+              onToggleActive={toggleScheduleActive}
+              onTestAlarm={handleTestAlarm}
             />
           </div>
         </div>

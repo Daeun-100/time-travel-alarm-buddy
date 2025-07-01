@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Schedule } from '@/types/schedule';
 import ScheduleCard from './ScheduleCard';
@@ -8,12 +7,16 @@ interface ScheduleListProps {
   schedules: Schedule[];
   onDeleteSchedule: (id: string) => void;
   onEditSchedule?: (schedule: Schedule) => void;
+  onToggleActive?: (id: string) => void;
+  onTestAlarm?: (schedule: Schedule, type: 'preparation' | 'departure') => void;
 }
 
 const ScheduleList: React.FC<ScheduleListProps> = ({ 
   schedules, 
   onDeleteSchedule, 
-  onEditSchedule 
+  onEditSchedule,
+  onToggleActive,
+  onTestAlarm
 }) => {
   if (schedules.length === 0) {
     return (
@@ -34,6 +37,8 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
           schedule={schedule}
           onDelete={onDeleteSchedule}
           onEdit={onEditSchedule}
+          onToggleActive={onToggleActive}
+          onTestAlarm={onTestAlarm}
         />
       ))}
     </div>

@@ -1,6 +1,5 @@
-
 import { useState, useCallback } from 'react';
-import { Schedule, TransportType } from '@/types/schedule';
+import { Schedule, TransportType, Weekday } from '@/types/schedule';
 import { getTrafficTime, parseTimeString, calculateDepartureTime } from '@/utils/timeCalculator';
 
 export function useSchedule() {
@@ -10,9 +9,11 @@ export function useSchedule() {
     destination: string,
     arrivalTime: string,
     transportType: TransportType,
-    preparationTime: number
+    preparationTime: number,
+    weekdays?: Weekday[],
+    selectedDates?: Date[]
   ) => {
-    console.log('Adding new schedule:', { destination, arrivalTime, transportType, preparationTime });
+    console.log('Adding new schedule:', { destination, arrivalTime, transportType, preparationTime, weekdays, selectedDates });
     
     const { hour } = parseTimeString(arrivalTime);
     const trafficDuration = getTrafficTime('잠실 루터회관', destination, transportType, hour);
@@ -30,6 +31,9 @@ export function useSchedule() {
       preparationTime,
       departureTime,
       preparationStartTime,
+      weekdays,
+      selectedDates,
+      isActive: true,
       createdAt: new Date()
     };
 
@@ -47,7 +51,9 @@ export function useSchedule() {
     destination: string,
     arrivalTime: string,
     transportType: TransportType,
-    preparationTime: number
+    preparationTime: number,
+    weekdays?: Weekday[],
+    selectedDates?: Date[]
   ) => {
     const { hour } = parseTimeString(arrivalTime);
     const trafficDuration = getTrafficTime('잠실 루터회관', destination, transportType, hour);
@@ -66,8 +72,18 @@ export function useSchedule() {
             transportType,
             preparationTime,
             departureTime,
-            preparationStartTime
+            preparationStartTime,
+            weekdays,
+            selectedDates
           }
+        : schedule
+    ));
+  }, []);
+
+  const toggleScheduleActive = useCallback((id: string) => {
+    setSchedules(prev => prev.map(schedule => 
+      schedule.id === id 
+        ? { ...schedule, isActive: !schedule.isActive }
         : schedule
     ));
   }, []);
@@ -76,6 +92,7 @@ export function useSchedule() {
     schedules,
     addSchedule,
     deleteSchedule,
-    updateSchedule
+    updateSchedule,
+    toggleScheduleActive
   };
 }
