@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Plus, Subway, Bus, Car, Bike, FootPrints } from 'lucide-react';
+import { Plus, Bus, Car, Bike, MapPin } from 'lucide-react';
 import { TransportType } from '@/types/schedule';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,11 +18,11 @@ interface ScheduleFormProps {
 }
 
 const transportOptions = [
-  { value: 'subway' as TransportType, label: '지하철', icon: Subway },
+  { value: 'subway' as TransportType, label: '지하철', icon: Bus }, // Using Bus icon for subway
   { value: 'bus' as TransportType, label: '버스', icon: Bus },
   { value: 'car' as TransportType, label: '자동차', icon: Car },
   { value: 'bicycle' as TransportType, label: '자전거', icon: Bike },
-  { value: 'walk' as TransportType, label: '도보', icon: FootPrints },
+  { value: 'walk' as TransportType, label: '도보', icon: MapPin }, // Using MapPin for walk
 ];
 
 const popularDestinations = [

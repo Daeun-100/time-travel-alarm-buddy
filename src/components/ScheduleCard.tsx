@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Trash2, Edit, MapPin, Subway, Bus, Car, Bike, FootPrints } from 'lucide-react';
+import { Trash2, Edit, MapPin, Bus, Car, Bike } from 'lucide-react';
 import { Schedule } from '@/types/schedule';
 import TimeDisplay from './TimeDisplay';
 import { Button } from '@/components/ui/button';
@@ -12,11 +12,11 @@ interface ScheduleCardProps {
 }
 
 const transportIcons = {
-  subway: Subway,
+  subway: Bus, // Using Bus icon for subway since Subway doesn't exist
   bus: Bus,
   car: Car,
   bicycle: Bike,
-  walk: FootPrints
+  walk: MapPin // Using MapPin for walk since it's more appropriate
 };
 
 const transportLabels = {
