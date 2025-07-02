@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       strategies: 'injectManifest',
       injectManifest: {
-        swSrc: 'src/sw.js',
+        swSrc: path.resolve(__dirname, 'src/sw.js'),
         swDest: 'sw.js',
       },
       workbox: {
