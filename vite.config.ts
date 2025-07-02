@@ -16,8 +16,10 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: 'autoUpdate',
       strategies: 'injectManifest',
-      srcDir: 'public',
-      filename: 'sw.js',
+      injectManifest: {
+        swSrc: 'src/sw.js',
+        swDest: 'sw.js',
+      },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         runtimeCaching: [
