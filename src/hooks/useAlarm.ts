@@ -6,41 +6,85 @@ import {
   showNotification, 
   playAlarmSound
 } from '@/utils/alarmUtils';
-import { useBackgroundAlarm } from './useBackgroundAlarm';
 
 export function useAlarm(schedules: Schedule[]) {
-  const alarmTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
-  const { 
-    setBackgroundAlarm, 
-    clearBackgroundAlarm, 
-    clearAllBackgroundAlarms, 
-    testBackgroundAlarm: testBackgroundAlarmFn 
-  } = useBackgroundAlarm(schedules);
+  // Map: alarmKey -> timeoutId
+  const alarmTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
-  // 알람 설정 (백그라운드 알람 사용)
+  // 알람 예약
   const setAlarm = useCallback((schedule: Schedule) => {
-    setBackgroundAlarm(schedule);
-  }, [setBackgroundAlarm]);
+    const { preparation, departure, advance, preparationAdvance } = getNextAlarmTime(schedule);
+    const alarmTypes = [
+      { time: preparation, type: 'preparation' },
+      { time: departure, type: 'departure' },
+      { time: advance, type: 'advance' },
+      { time: preparationAdvance, type: 'preparation-advance' },
+    ];
+    alarmTypes.forEach(({ time, type }) => {
+      if (time) {
+        const alarmKey = `${schedule.id}-${type}`;
+        // 기존 알람 제거
+        const prevTimeout = alarmTimeoutsRef.current.get(alarmKey);
+        if (prevTimeout) clearTimeout(prevTimeout);
+        // 알람 예약
+        const delay = time.getTime() - Date.now();
+        if (delay > 0) {
+          const timeoutId = setTimeout(() => {
+            const title = type === 'preparation' ? '준비 알람'
+              : type === 'departure' ? '출발 알람'
+              : type === 'advance' ? '사전 알림'
+              : type === 'preparation-advance' ? '준비 사전 알림'
+              : '알람';
+            const body = createAlarmMessage(schedule, type as any);
+            showNotification(title, body);
+            playAlarmSound();
+            alarmTimeoutsRef.current.delete(alarmKey);
+          }, delay);
+          alarmTimeoutsRef.current.set(alarmKey, timeoutId);
+        }
+      }
+    });
+  }, []);
 
-  // 알람 제거 (백그라운드 알람 사용)
+  // 알람 제거
   const clearAlarm = useCallback((scheduleId: string) => {
-    clearBackgroundAlarm(scheduleId);
-  }, [clearBackgroundAlarm]);
+    ['preparation', 'departure', 'advance', 'preparation-advance'].forEach(type => {
+      const alarmKey = `${scheduleId}-${type}`;
+      const timeoutId = alarmTimeoutsRef.current.get(alarmKey);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        alarmTimeoutsRef.current.delete(alarmKey);
+      }
+    });
+  }, []);
 
-  // 모든 알람 제거 (백그라운드 알람 사용)
+  // 모든 알람 제거
   const clearAllAlarms = useCallback(() => {
-    clearAllBackgroundAlarms();
-  }, [clearAllBackgroundAlarms]);
+    alarmTimeoutsRef.current.forEach(timeoutId => clearTimeout(timeoutId));
+    alarmTimeoutsRef.current.clear();
+  }, []);
 
-  // 알람 테스트 (백그라운드 알람 사용)
+  // 알람 테스트
   const testAlarm = useCallback((schedule: Schedule, type: 'preparation' | 'departure' | 'advance' | 'preparation-advance' = 'departure') => {
-    testBackgroundAlarmFn(schedule, type);
-  }, [testBackgroundAlarmFn]);
+    const title = type === 'preparation' ? '준비 알람'
+      : type === 'departure' ? '출발 알람'
+      : type === 'advance' ? '사전 알림'
+      : type === 'preparation-advance' ? '준비 사전 알림'
+      : '알람';
+    const body = createAlarmMessage(schedule, type);
+    showNotification(title, body);
+    playAlarmSound();
+  }, []);
 
-  // 일정 변경 시 알람 재설정 (백그라운드 알람이 자동으로 처리)
+  // 일정 변경 시 알람 재설정
   useEffect(() => {
-    // 백그라운드 알람이 자동으로 처리하므로 여기서는 추가 작업 불필요
-  }, [schedules]);
+    clearAllAlarms();
+    schedules.forEach(schedule => {
+      if (schedule.isActive !== false) {
+        setAlarm(schedule);
+      }
+    });
+  }, [schedules, setAlarm, clearAllAlarms]);
 
   return {
     setAlarm,
