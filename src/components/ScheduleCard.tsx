@@ -1,12 +1,14 @@
-import React from 'react';
-import { Trash2, Edit, MapPin, Bus, Car, Bike, Calendar, Clock, Bell, Volume2, ChevronDown } from 'lucide-react';
+import React, { useState } from 'react';
+import { Trash2, Edit, MapPin, Bus, Car, Bike, Calendar, Clock, Bell, Volume2, ChevronDown, Info } from 'lucide-react';
 import { Schedule, WEEKDAY_LABELS } from '@/types/schedule';
 import TimeDisplay from './TimeDisplay';
+import TrafficDetailBox from './TrafficDetailBox';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { getTrafficTime } from '@/utils/timeCalculator';
 
 interface ScheduleCardProps {
   schedule: Schedule;
@@ -39,7 +41,12 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   onToggleActive,
   onTestAlarm 
 }) => {
+  const [showTrafficDetail, setShowTrafficDetail] = useState(false);
   const TransportIcon = transportIcons[schedule.transportType];
+  
+  // 교통 시간 계산
+  const [hour] = schedule.arrivalTime.split(':').map(Number);
+  const trafficDuration = getTrafficTime('잠실 루터회관', schedule.destination, schedule.transportType, hour);
 
   const formatWeekdays = (weekdays: string[]) => {
     if (weekdays.length === 7) return '매일';
@@ -163,6 +170,34 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
         departureTime={schedule.departureTime}
         arrivalTime={schedule.arrivalTime}
       />
+
+      {/* 교통 상세 정보 토글 버튼 */}
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+        <div className="flex items-center space-x-2">
+          <Info size={16} className="text-gray-600" />
+          <span className="text-sm text-gray-700">교통 상세 정보</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowTrafficDetail(!showTrafficDetail)}
+          className="text-blue-600 hover:text-blue-700"
+        >
+          {showTrafficDetail ? '접기' : '보기'}
+        </Button>
+      </div>
+
+      {/* 교통 상세 정보 박스 */}
+      {showTrafficDetail && (
+        <div className="mt-4">
+          <TrafficDetailBox
+            destination={schedule.destination}
+            transportType={schedule.transportType}
+            arrivalTime={schedule.arrivalTime}
+            trafficDuration={trafficDuration}
+          />
+        </div>
+      )}
 
       {/* 알람 활성화 토글 */}
       {onToggleActive && (
