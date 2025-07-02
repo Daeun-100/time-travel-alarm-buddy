@@ -15,9 +15,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
-      strategies: 'injectManifest',
-      srcDir: 'public',
-      filename: 'sw.js',
+      strategies: 'generateSW',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         runtimeCaching: [
