@@ -133,122 +133,6 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
     <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-4">새 일정 등록</h2>
       
-      <div className="space-y-2">
-        <Label htmlFor="origin">출발지</Label>
-        <Input
-          id="origin"
-          type="text"
-          value={origin}
-          onChange={(e) => setOrigin(e.target.value)}
-          placeholder="예: 잠실 루터회관, 잠실역"
-          className="w-full"
-        />
-        <div className="flex flex-wrap gap-2 mt-2">
-          {POPULAR_ORIGINS.map((place) => (
-            <Button
-              key={place}
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setOrigin(place)}
-              className="text-xs"
-            >
-              {place}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="destination">도착지</Label>
-        <Input
-          id="destination"
-          type="text"
-          value={destination}
-          onChange={(e) => setDestination(e.target.value)}
-          placeholder="예: 행성대학교, 강남역"
-          className="w-full"
-        />
-        <div className="flex flex-wrap gap-2 mt-2">
-          {POPULAR_DESTINATIONS.map((place) => (
-            <Button
-              key={place}
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setDestination(place)}
-              className="text-xs"
-            >
-              {place}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="arrivalTime">도착 시간</Label>
-        <Input
-          id="arrivalTime"
-          type="time"
-          value={arrivalTime}
-          onChange={(e) => setArrivalTime(e.target.value)}
-          className="w-full"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label>이동 수단</Label>
-        <Select value={transportType} onValueChange={(value: TransportType) => setTransportType(value)}>
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {transportOptions.map((option) => {
-              const Icon = option.icon;
-              return (
-                <SelectItem key={option.value} value={option.value}>
-                  <div className="flex items-center space-x-2">
-                    <Icon size={16} />
-                    <span>{option.label}</span>
-                  </div>
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="preparationTime">준비 시간 (분)</Label>
-        <Input
-          id="preparationTime"
-          type="number"
-          min="5"
-          max="120"
-          step="5"
-          value={preparationTime}
-          onChange={(e) => setPreparationTime(Number(e.target.value))}
-          className="w-full"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="memo">메모 (선택사항)</Label>
-        <textarea
-          id="memo"
-          value={memo}
-          onChange={(e) => setMemo(e.target.value)}
-          placeholder="예: 중요한 회의, 준비물, 특별한 일정 등"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-          rows={3}
-          maxLength={200}
-        />
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>💡 알람이 울릴 때 함께 표시됩니다</span>
-          <span>{memo.length}/200</span>
-        </div>
-      </div>
-
       <div className="space-y-4">
         <Label>일정 유형</Label>
         <div className="flex gap-4">
@@ -370,6 +254,122 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
           </div>
         </div>
       )}
+
+      <div className="space-y-2">
+        <Label htmlFor="origin">출발지</Label>
+        <Input
+          id="origin"
+          type="text"
+          value={origin}
+          onChange={(e) => setOrigin(e.target.value)}
+          placeholder="예: 잠실 루터회관, 잠실역"
+          className="w-full"
+        />
+        <div className="flex flex-wrap gap-2 mt-2">
+          {POPULAR_ORIGINS.map((place) => (
+            <Button
+              key={place}
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setOrigin(place)}
+              className="text-xs"
+            >
+              {place}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="destination">도착지</Label>
+        <Input
+          id="destination"
+          type="text"
+          value={destination}
+          onChange={(e) => setDestination(e.target.value)}
+          placeholder="예: 행성대학교, 강남역"
+          className="w-full"
+        />
+        <div className="flex flex-wrap gap-2 mt-2">
+          {POPULAR_DESTINATIONS.map((place) => (
+            <Button
+              key={place}
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setDestination(place)}
+              className="text-xs"
+            >
+              {place}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="arrivalTime">도착 시간</Label>
+        <Input
+          id="arrivalTime"
+          type="time"
+          value={arrivalTime}
+          onChange={(e) => setArrivalTime(e.target.value)}
+          className="w-full"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>이동 수단</Label>
+        <Select value={transportType} onValueChange={(value: TransportType) => setTransportType(value)}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {transportOptions.map((option) => {
+              const Icon = option.icon;
+              return (
+                <SelectItem key={option.value} value={option.value}>
+                  <div className="flex items-center space-x-2">
+                    <Icon size={16} />
+                    <span>{option.label}</span>
+                  </div>
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="preparationTime">준비 시간 (분)</Label>
+        <Input
+          id="preparationTime"
+          type="number"
+          min="5"
+          max="120"
+          step="5"
+          value={preparationTime}
+          onChange={(e) => setPreparationTime(Number(e.target.value))}
+          className="w-full"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="memo">메모 (선택사항)</Label>
+        <textarea
+          id="memo"
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+          placeholder="예: 중요한 회의, 준비물, 특별한 일정 등"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          rows={3}
+          maxLength={200}
+        />
+        <div className="flex justify-between text-xs text-gray-500">
+          <span>💡 알람이 울릴 때 함께 표시됩니다</span>
+          <span>{memo.length}/200</span>
+        </div>
+      </div>
 
       <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
         <Plus className="w-4 h-4 mr-2" />
