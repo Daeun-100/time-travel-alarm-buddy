@@ -19,6 +19,7 @@ export interface Schedule {
     enabled: boolean;
     minutes: number; // 준비 시작 몇 분 전에 알림할지
   };
+  memo?: string; // 일정에 대한 메모
 }
 
 export interface TrafficData {

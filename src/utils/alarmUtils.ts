@@ -106,7 +106,14 @@ export function createAlarmMessage(schedule: Schedule, type: 'preparation' | 'de
       break;
   }
   
-  return `⏰ ${schedule.destination} ${action}!\n시간: ${time}\n이동수단: ${getTransportLabel(schedule.transportType)}`;
+  let message = `⏰ ${schedule.destination} ${action}!\n시간: ${time}\n이동수단: ${getTransportLabel(schedule.transportType)}`;
+  
+  // 사전 알림이 아닌 경우에만 메모 표시
+  if (type !== 'advance' && type !== 'preparation-advance' && schedule.memo) {
+    message += `\n\n📝 메모: ${schedule.memo}`;
+  }
+  
+  return message;
 }
 
 // 교통수단 라벨

@@ -115,6 +115,12 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
                 <span className="font-medium">출발 사전 알림 {schedule.advanceAlarm.minutes}분 전</span>
               </div>
             )}
+            {schedule.memo && (
+              <div className="flex items-start space-x-2 text-sm text-gray-700 mt-2 p-2 bg-gray-50 rounded">
+                <span className="text-gray-500">📝</span>
+                <span className="text-xs">{schedule.memo}</span>
+              </div>
+            )}
             {scheduleInfo && (
               <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
                 <scheduleInfo.icon size={14} />

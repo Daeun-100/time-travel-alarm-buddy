@@ -14,9 +14,10 @@ export function useSchedule() {
     weekdays?: Weekday[],
     selectedDates?: Date[],
     advanceAlarm?: { enabled: boolean; minutes: number },
-    preparationAdvanceAlarm?: { enabled: boolean; minutes: number }
+    preparationAdvanceAlarm?: { enabled: boolean; minutes: number },
+    memo?: string
   ) => {
-    console.log('Adding new schedule:', { origin, destination, arrivalTime, transportType, preparationTime, weekdays, selectedDates, advanceAlarm, preparationAdvanceAlarm });
+    console.log('Adding new schedule:', { origin, destination, arrivalTime, transportType, preparationTime, weekdays, selectedDates, advanceAlarm, preparationAdvanceAlarm, memo });
     
     const { hour } = parseTimeString(arrivalTime);
     const trafficDuration = getTrafficTime(origin, destination, transportType, hour);
@@ -39,6 +40,7 @@ export function useSchedule() {
       selectedDates,
       advanceAlarm,
       preparationAdvanceAlarm,
+      memo,
       isActive: true,
       createdAt: new Date()
     };
@@ -62,7 +64,8 @@ export function useSchedule() {
     weekdays?: Weekday[],
     selectedDates?: Date[],
     advanceAlarm?: { enabled: boolean; minutes: number },
-    preparationAdvanceAlarm?: { enabled: boolean; minutes: number }
+    preparationAdvanceAlarm?: { enabled: boolean; minutes: number },
+    memo?: string
   ) => {
     const { hour } = parseTimeString(arrivalTime);
     const trafficDuration = getTrafficTime(origin, destination, transportType, hour);
@@ -86,7 +89,8 @@ export function useSchedule() {
             weekdays,
             selectedDates,
             advanceAlarm,
-            preparationAdvanceAlarm
+            preparationAdvanceAlarm,
+            memo
           }
         : schedule
     ));

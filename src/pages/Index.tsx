@@ -33,10 +33,11 @@ const Index = () => {
     transportType: TransportType,
     preparationTime: number,
     weekdays?: Weekday[],
-    selectedDates?: Date[]
+    selectedDates?: Date[],
+    memo?: string
   ) => {
     if (editingSchedule) {
-      updateSchedule(editingSchedule.id, origin, destination, arrivalTime, transportType, preparationTime, weekdays, selectedDates);
+      updateSchedule(editingSchedule.id, origin, destination, arrivalTime, transportType, preparationTime, weekdays, selectedDates, undefined, undefined, memo);
       setEditingSchedule(null);
     } else {
       // 전역 알람 설정을 적용하여 일정 생성
@@ -49,7 +50,8 @@ const Index = () => {
         weekdays, 
         selectedDates, 
         globalAdvanceAlarm.enabled ? globalAdvanceAlarm : undefined,
-        globalPreparationAdvanceAlarm.enabled ? globalPreparationAdvanceAlarm : undefined
+        globalPreparationAdvanceAlarm.enabled ? globalPreparationAdvanceAlarm : undefined,
+        memo
       );
     }
     setShowForm(false);
@@ -182,8 +184,7 @@ const Index = () => {
                     preparationTime: editingSchedule.preparationTime,
                     weekdays: editingSchedule.weekdays,
                     selectedDates: editingSchedule.selectedDates,
-                    advanceAlarm: editingSchedule.advanceAlarm,
-                    advanceAlarm: editingSchedule.advanceAlarm
+                    memo: editingSchedule.memo
                   } : undefined}
                   submitLabel={editingSchedule ? '일정 수정' : '일정 등록'}
                 />

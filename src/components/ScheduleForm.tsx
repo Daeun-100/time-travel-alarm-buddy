@@ -13,7 +13,7 @@ import { ko } from 'date-fns/locale';
 import { TRANSPORT_LABELS, TRANSPORT_ICONS, POPULAR_ORIGINS, POPULAR_DESTINATIONS } from '@/mocks/trafficData';
 
 interface ScheduleFormProps {
-  onSubmit: (origin: string, destination: string, arrivalTime: string, transportType: TransportType, preparationTime: number, weekdays?: Weekday[], selectedDates?: Date[]) => void;
+  onSubmit: (origin: string, destination: string, arrivalTime: string, transportType: TransportType, preparationTime: number, weekdays?: Weekday[], selectedDates?: Date[], memo?: string) => void;
   initialData?: {
     origin: string;
     destination: string;
@@ -22,6 +22,7 @@ interface ScheduleFormProps {
     preparationTime: number;
     weekdays?: Weekday[];
     selectedDates?: Date[];
+    memo?: string;
   };
   submitLabel?: string;
 }
@@ -47,6 +48,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
   const [selectedWeekdays, setSelectedWeekdays] = useState<Weekday[]>(initialData?.weekdays || []);
   const [selectedDates, setSelectedDates] = useState<Date[]>(initialData?.selectedDates || []);
   const [scheduleType, setScheduleType] = useState<'one-time' | 'recurring'>('one-time');
+  const [memo, setMemo] = useState(initialData?.memo || '');
 
   const handleWeekdayToggle = (weekday: Weekday) => {
     setSelectedWeekdays(prev => 
@@ -98,7 +100,8 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
       transportType, 
       preparationTime, 
       weekdays: scheduleType === 'recurring' ? selectedWeekdays : undefined,
-      selectedDates: scheduleType === 'one-time' ? selectedDates : undefined
+      selectedDates: scheduleType === 'one-time' ? selectedDates : undefined,
+      memo: memo.trim() || undefined
     });
     
     onSubmit(
@@ -108,7 +111,8 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
       transportType, 
       preparationTime, 
       scheduleType === 'recurring' ? selectedWeekdays : undefined,
-      scheduleType === 'one-time' ? selectedDates : undefined
+      scheduleType === 'one-time' ? selectedDates : undefined,
+      memo.trim() || undefined
     );
     
     // Reset form if it's not editing
@@ -121,6 +125,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
       setSelectedWeekdays([]);
       setSelectedDates([]);
       setScheduleType('one-time');
+      setMemo('');
     }
   };
 
@@ -225,6 +230,23 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
           onChange={(e) => setPreparationTime(Number(e.target.value))}
           className="w-full"
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="memo">메모 (선택사항)</Label>
+        <textarea
+          id="memo"
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+          placeholder="예: 중요한 회의, 준비물, 특별한 일정 등"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          rows={3}
+          maxLength={200}
+        />
+        <div className="flex justify-between text-xs text-gray-500">
+          <span>💡 알람이 울릴 때 함께 표시됩니다</span>
+          <span>{memo.length}/200</span>
+        </div>
       </div>
 
       <div className="space-y-4">
