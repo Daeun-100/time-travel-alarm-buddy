@@ -3,6 +3,7 @@ import { MapPin, Clock, Train, Bus, Car, Bike, TrendingUp, AlertTriangle, Route 
 import { TransportType } from '@/types/schedule';
 
 interface TrafficDetailBoxProps {
+  origin: string;
   destination: string;
   transportType: TransportType;
   arrivalTime: string;
@@ -26,95 +27,13 @@ const transportLabels = {
   walk: '도보'
 };
 
-const getRouteInfo = (destination: string, transportType: TransportType) => {
-  const routes = {
-    '행성대학교': {
-      subway: {
-        route: '잠실역 → 강남역 → 행성대역',
-        transfers: 1,
-        stations: 8,
-        details: '2호선 → 2호선 (강남역 환승)'
-      },
-      bus: {
-        route: '잠실역 → 강남역 → 행성대학교',
-        transfers: 1,
-        stations: 12,
-        details: '간선버스 → 지선버스'
-      },
-      car: {
-        route: '잠실역 → 강남대로 → 행성대학교',
-        transfers: 0,
-        stations: 0,
-        details: '강남대로 경유 (약 15km)'
-      }
-    },
-    '강남역': {
-      subway: {
-        route: '잠실역 → 강남역',
-        transfers: 0,
-        stations: 4,
-        details: '2호선 직통'
-      },
-      bus: {
-        route: '잠실역 → 강남역',
-        transfers: 0,
-        stations: 6,
-        details: '간선버스 직통'
-      },
-      car: {
-        route: '잠실역 → 강남대로 → 강남역',
-        transfers: 0,
-        stations: 0,
-        details: '강남대로 경유 (약 8km)'
-      }
-    },
-    '홍대입구': {
-      subway: {
-        route: '잠실역 → 강남역 → 홍대입구',
-        transfers: 1,
-        stations: 12,
-        details: '2호선 → 2호선 (강남역 환승)'
-      },
-      bus: {
-        route: '잠실역 → 강남역 → 홍대입구',
-        transfers: 1,
-        stations: 15,
-        details: '간선버스 → 지선버스'
-      },
-      car: {
-        route: '잠실역 → 강남대로 → 홍대입구',
-        transfers: 0,
-        stations: 0,
-        details: '강남대로 경유 (약 18km)'
-      }
-    },
-    '신촌': {
-      subway: {
-        route: '잠실역 → 강남역 → 신촌역',
-        transfers: 1,
-        stations: 10,
-        details: '2호선 → 2호선 (강남역 환승)'
-      },
-      bus: {
-        route: '잠실역 → 강남역 → 신촌역',
-        transfers: 1,
-        stations: 13,
-        details: '간선버스 → 지선버스'
-      },
-      car: {
-        route: '잠실역 → 강남대로 → 신촌역',
-        transfers: 0,
-        stations: 0,
-        details: '강남대로 경유 (약 16km)'
-      }
-    }
-  };
-
-  return routes[destination as keyof typeof routes]?.[transportType] || {
-    route: '경로 정보 없음',
+const getRouteInfo = (origin: string, destination: string, transportType: TransportType) => {
+  // 간단한 경로 정보 반환 (실제로는 더 복잡한 로직이 필요)
+  return {
+    route: `${origin} → ${destination}`,
     transfers: 0,
     stations: 0,
-    details: '상세 정보 없음'
+    details: '경로 정보'
   };
 };
 
@@ -161,6 +80,7 @@ const getDelayInfo = (timeSlot: string, transportType: TransportType) => {
 };
 
 const TrafficDetailBox: React.FC<TrafficDetailBoxProps> = ({
+  origin,
   destination,
   transportType,
   arrivalTime,
@@ -169,7 +89,7 @@ const TrafficDetailBox: React.FC<TrafficDetailBoxProps> = ({
 }) => {
   const [hour] = arrivalTime.split(':').map(Number);
   const timeSlot = getTimeSlotLabel(hour);
-  const routeInfo = getRouteInfo(destination, transportType);
+  const routeInfo = getRouteInfo(origin, destination, transportType);
   const delayInfo = getDelayInfo(timeSlot, transportType);
   const TransportIcon = transportIcons[transportType];
   

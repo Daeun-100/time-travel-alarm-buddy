@@ -12,8 +12,9 @@ import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 interface ScheduleFormProps {
-  onSubmit: (destination: string, arrivalTime: string, transportType: TransportType, preparationTime: number, weekdays?: Weekday[], selectedDates?: Date[]) => void;
+  onSubmit: (origin: string, destination: string, arrivalTime: string, transportType: TransportType, preparationTime: number, weekdays?: Weekday[], selectedDates?: Date[]) => void;
   initialData?: {
+    origin: string;
     destination: string;
     arrivalTime: string;
     transportType: TransportType;
@@ -32,6 +33,13 @@ const transportOptions = [
   { value: 'walk' as TransportType, label: '도보', icon: MapPin }, // Using MapPin for walk
 ];
 
+const popularOrigins = [
+  '잠실 루터회관',
+  '잠실역',
+  '강남역',
+  '홍대입구'
+];
+
 const popularDestinations = [
   '행성대학교',
   '강남역',
@@ -44,6 +52,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
   initialData,
   submitLabel = '일정 등록'
 }) => {
+  const [origin, setOrigin] = useState(initialData?.origin || '잠실 루터회관');
   const [destination, setDestination] = useState(initialData?.destination || '');
   const [arrivalTime, setArrivalTime] = useState(initialData?.arrivalTime || '');
   const [transportType, setTransportType] = useState<TransportType>(initialData?.transportType || 'subway');
@@ -78,8 +87,8 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!destination.trim() || !arrivalTime) {
-      alert('도착지와 도착 시간을 모두 입력해주세요.');
+    if (!origin.trim() || !destination.trim() || !arrivalTime) {
+      alert('출발지, 도착지, 도착 시간을 모두 입력해주세요.');
       return;
     }
 
@@ -96,6 +105,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
     }
 
     console.log('Form submitted:', { 
+      origin,
       destination, 
       arrivalTime, 
       transportType, 
@@ -105,6 +115,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
     });
     
     onSubmit(
+      origin.trim(),
       destination.trim(), 
       arrivalTime, 
       transportType, 
@@ -115,6 +126,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
     
     // Reset form if it's not editing
     if (!initialData) {
+      setOrigin('잠실 루터회관');
       setDestination('');
       setArrivalTime('');
       setTransportType('subway');
@@ -129,6 +141,32 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
     <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-4">새 일정 등록</h2>
       
+      <div className="space-y-2">
+        <Label htmlFor="origin">출발지</Label>
+        <Input
+          id="origin"
+          type="text"
+          value={origin}
+          onChange={(e) => setOrigin(e.target.value)}
+          placeholder="예: 잠실 루터회관, 잠실역"
+          className="w-full"
+        />
+        <div className="flex flex-wrap gap-2 mt-2">
+          {popularOrigins.map((place) => (
+            <Button
+              key={place}
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setOrigin(place)}
+              className="text-xs"
+            >
+              {place}
+            </Button>
+          ))}
+        </div>
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="destination">도착지</Label>
         <Input

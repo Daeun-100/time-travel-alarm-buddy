@@ -45,9 +45,9 @@ export function isScheduleActiveToday(schedule: Schedule): boolean {
 }
 
 // 다음 알람 시간 계산
-export function getNextAlarmTime(schedule: Schedule): { preparation: Date | null; departure: Date | null } {
+export function getNextAlarmTime(schedule: Schedule): { preparation: Date | null; departure: Date | null; advance: Date | null; preparationAdvance: Date | null } {
   if (!isScheduleActiveToday(schedule)) {
-    return { preparation: null, departure: null };
+    return { preparation: null, departure: null, advance: null, preparationAdvance: null };
   }
 
   const now = new Date();
@@ -57,17 +57,54 @@ export function getNextAlarmTime(schedule: Schedule): { preparation: Date | null
   const preparationTime = timeStringToDateOnDate(schedule.preparationStartTime, today);
   // 출발 시간
   const departureTime = timeStringToDateOnDate(schedule.departureTime, today);
+  
+  // 사전 알림 시간 (출발 시간에서 설정된 분만큼 뺀 시간)
+  let advanceTime: Date | null = null;
+  if (schedule.advanceAlarm?.enabled && schedule.advanceAlarm.minutes > 0) {
+    advanceTime = new Date(departureTime);
+    advanceTime.setMinutes(advanceTime.getMinutes() - schedule.advanceAlarm.minutes);
+  }
+
+  // 준비 사전 알림 시간 (준비 시작 시간에서 설정된 분만큼 뺀 시간)
+  let preparationAdvanceTime: Date | null = null;
+  if (schedule.preparationAdvanceAlarm?.enabled && schedule.preparationAdvanceAlarm.minutes > 0) {
+    preparationAdvanceTime = new Date(preparationTime);
+    preparationAdvanceTime.setMinutes(preparationAdvanceTime.getMinutes() - schedule.preparationAdvanceAlarm.minutes);
+  }
 
   return {
     preparation: preparationTime > now ? preparationTime : null,
-    departure: departureTime > now ? departureTime : null
+    departure: departureTime > now ? departureTime : null,
+    advance: advanceTime && advanceTime > now ? advanceTime : null,
+    preparationAdvance: preparationAdvanceTime && preparationAdvanceTime > now ? preparationAdvanceTime : null
   };
 }
 
 // 알람 메시지 생성
-export function createAlarmMessage(schedule: Schedule, type: 'preparation' | 'departure'): string {
-  const time = type === 'preparation' ? schedule.preparationStartTime : schedule.departureTime;
-  const action = type === 'preparation' ? '준비를 시작하세요' : '출발하세요';
+export function createAlarmMessage(schedule: Schedule, type: 'preparation' | 'departure' | 'advance' | 'preparation-advance'): string {
+  let time: string;
+  let action: string;
+  
+  switch (type) {
+    case 'preparation':
+      time = schedule.preparationStartTime;
+      action = '준비를 시작하세요';
+      break;
+    case 'departure':
+      time = schedule.departureTime;
+      action = '출발하세요';
+      break;
+    case 'advance':
+      time = schedule.departureTime;
+      const minutes = schedule.advanceAlarm?.minutes || 0;
+      action = `${minutes}분 후 출발 예정입니다`;
+      break;
+    case 'preparation-advance':
+      time = schedule.preparationStartTime;
+      const prepMinutes = schedule.preparationAdvanceAlarm?.minutes || 0;
+      action = `${prepMinutes}분 후 준비 시작 예정입니다`;
+      break;
+  }
   
   return `⏰ ${schedule.destination} ${action}!\n시간: ${time}\n이동수단: ${getTransportLabel(schedule.transportType)}`;
 }

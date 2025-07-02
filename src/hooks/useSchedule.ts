@@ -6,17 +6,20 @@ export function useSchedule() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
 
   const addSchedule = useCallback((
+    origin: string,
     destination: string,
     arrivalTime: string,
     transportType: TransportType,
     preparationTime: number,
     weekdays?: Weekday[],
-    selectedDates?: Date[]
+    selectedDates?: Date[],
+    advanceAlarm?: { enabled: boolean; minutes: number },
+    preparationAdvanceAlarm?: { enabled: boolean; minutes: number }
   ) => {
-    console.log('Adding new schedule:', { destination, arrivalTime, transportType, preparationTime, weekdays, selectedDates });
+    console.log('Adding new schedule:', { origin, destination, arrivalTime, transportType, preparationTime, weekdays, selectedDates, advanceAlarm, preparationAdvanceAlarm });
     
     const { hour } = parseTimeString(arrivalTime);
-    const trafficDuration = getTrafficTime('잠실 루터회관', destination, transportType, hour);
+    const trafficDuration = getTrafficTime(origin, destination, transportType, hour);
     const { departureTime, preparationStartTime } = calculateDepartureTime(
       arrivalTime,
       trafficDuration,
@@ -25,6 +28,7 @@ export function useSchedule() {
 
     const newSchedule: Schedule = {
       id: Date.now().toString(),
+      origin,
       destination,
       arrivalTime,
       transportType,
@@ -33,6 +37,8 @@ export function useSchedule() {
       preparationStartTime,
       weekdays,
       selectedDates,
+      advanceAlarm,
+      preparationAdvanceAlarm,
       isActive: true,
       createdAt: new Date()
     };
@@ -48,15 +54,18 @@ export function useSchedule() {
 
   const updateSchedule = useCallback((
     id: string,
+    origin: string,
     destination: string,
     arrivalTime: string,
     transportType: TransportType,
     preparationTime: number,
     weekdays?: Weekday[],
-    selectedDates?: Date[]
+    selectedDates?: Date[],
+    advanceAlarm?: { enabled: boolean; minutes: number },
+    preparationAdvanceAlarm?: { enabled: boolean; minutes: number }
   ) => {
     const { hour } = parseTimeString(arrivalTime);
-    const trafficDuration = getTrafficTime('잠실 루터회관', destination, transportType, hour);
+    const trafficDuration = getTrafficTime(origin, destination, transportType, hour);
     const { departureTime, preparationStartTime } = calculateDepartureTime(
       arrivalTime,
       trafficDuration,
@@ -67,6 +76,7 @@ export function useSchedule() {
       schedule.id === id 
         ? {
             ...schedule,
+            origin,
             destination,
             arrivalTime,
             transportType,
@@ -74,7 +84,9 @@ export function useSchedule() {
             departureTime,
             preparationStartTime,
             weekdays,
-            selectedDates
+            selectedDates,
+            advanceAlarm,
+            preparationAdvanceAlarm
           }
         : schedule
     ));

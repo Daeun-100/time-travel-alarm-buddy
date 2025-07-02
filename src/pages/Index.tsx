@@ -4,16 +4,30 @@ import { useSchedule } from '@/hooks/useSchedule';
 import { useAlarm } from '@/hooks/useAlarm';
 import ScheduleForm from '@/components/ScheduleForm';
 import ScheduleList from '@/components/ScheduleList';
+import AlarmSettings from '@/components/AlarmSettings';
 import { Button } from '@/components/ui/button';
 import { TransportType, Weekday, Schedule } from '@/types/schedule';
 
 const Index = () => {
   const { schedules, addSchedule, deleteSchedule, updateSchedule, toggleScheduleActive, toggleGroupActive, deleteGroup } = useSchedule();
-  const { testAlarm, requestPermission, hasPermission } = useAlarm(schedules);
+  const { testAlarm } = useAlarm(schedules);
   const [showForm, setShowForm] = useState(false);
+  const [showAlarmSettings, setShowAlarmSettings] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
+  
+  // 전역 알람 설정 (모든 일정에 적용)
+  const [globalAdvanceAlarm, setGlobalAdvanceAlarm] = useState({
+    enabled: false,
+    minutes: 10
+  });
+  
+  const [globalPreparationAdvanceAlarm, setGlobalPreparationAdvanceAlarm] = useState({
+    enabled: false,
+    minutes: 15
+  });
 
   const handleAddSchedule = (
+    origin: string,
     destination: string,
     arrivalTime: string,
     transportType: TransportType,
@@ -22,12 +36,63 @@ const Index = () => {
     selectedDates?: Date[]
   ) => {
     if (editingSchedule) {
-      updateSchedule(editingSchedule.id, destination, arrivalTime, transportType, preparationTime, weekdays, selectedDates);
+      updateSchedule(editingSchedule.id, origin, destination, arrivalTime, transportType, preparationTime, weekdays, selectedDates);
       setEditingSchedule(null);
     } else {
-      addSchedule(destination, arrivalTime, transportType, preparationTime, weekdays, selectedDates);
+      // 전역 알람 설정을 적용하여 일정 생성
+      addSchedule(
+        origin, 
+        destination, 
+        arrivalTime, 
+        transportType, 
+        preparationTime, 
+        weekdays, 
+        selectedDates, 
+        globalAdvanceAlarm.enabled ? globalAdvanceAlarm : undefined,
+        globalPreparationAdvanceAlarm.enabled ? globalPreparationAdvanceAlarm : undefined
+      );
     }
     setShowForm(false);
+  };
+
+  const handleAdvanceAlarmChange = (enabled: boolean, minutes: number) => {
+    setGlobalAdvanceAlarm({ enabled, minutes });
+  };
+
+  const handlePreparationAdvanceAlarmChange = (enabled: boolean, minutes: number) => {
+    setGlobalPreparationAdvanceAlarm({ enabled, minutes });
+  };
+
+  const handleTestAlarm = (schedule: Schedule, type: 'preparation' | 'departure' | 'advance' | 'preparation-advance') => {
+    testAlarm(schedule, type);
+  };
+
+
+
+  const handleTestGlobalAlarm = () => {
+    // 임시 일정으로 전역 알람 테스트
+    const testSchedule: Schedule = {
+      id: 'test',
+      origin: '잠실 루터회관',
+      destination: '테스트 목적지',
+      arrivalTime: '09:00',
+      transportType: 'subway',
+      preparationTime: 30,
+      departureTime: '08:30',
+      preparationStartTime: '08:00',
+      advanceAlarm: globalAdvanceAlarm.enabled ? globalAdvanceAlarm : undefined,
+      preparationAdvanceAlarm: globalPreparationAdvanceAlarm.enabled ? globalPreparationAdvanceAlarm : undefined,
+      isActive: true,
+      createdAt: new Date()
+    };
+    
+    if (globalPreparationAdvanceAlarm.enabled) {
+      testAlarm(testSchedule, 'preparation-advance');
+    } else if (globalAdvanceAlarm.enabled) {
+      testAlarm(testSchedule, 'advance');
+    } else {
+      testAlarm(testSchedule, 'departure');
+    }
   };
 
   const handleEditSchedule = (schedule: Schedule) => {
@@ -38,14 +103,6 @@ const Index = () => {
   const handleCancelEdit = () => {
     setEditingSchedule(null);
     setShowForm(false);
-  };
-
-  const handleTestAlarm = (schedule: Schedule, type: 'preparation' | 'departure') => {
-    testAlarm(schedule, type);
-  };
-
-  const handleRequestPermission = async () => {
-    await requestPermission();
   };
 
   return (
@@ -65,17 +122,15 @@ const Index = () => {
             </div>
             
             <div className="flex items-center space-x-4">
-              {!hasPermission && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRequestPermission}
-                  className="text-xs"
-                >
-                  <Bell size={14} className="mr-1" />
-                  알림 권한
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAlarmSettings(!showAlarmSettings)}
+                className="text-xs"
+              >
+                <Bell size={14} className="mr-1" />
+                {showAlarmSettings ? '알람 설정 닫기' : '알람 설정'}
+              </Button>
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <Bell size={16} />
                 <span>총 {schedules.length}개 일정</span>
@@ -88,8 +143,18 @@ const Index = () => {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Left Column - Form */}
+          {/* Left Column - Form & Settings */}
           <div className="space-y-6">
+            {/* 알람 설정 섹션 */}
+            {showAlarmSettings && (
+              <AlarmSettings
+                advanceAlarm={globalAdvanceAlarm}
+                preparationAdvanceAlarm={globalPreparationAdvanceAlarm}
+                onAdvanceAlarmChange={handleAdvanceAlarmChange}
+                onPreparationAdvanceAlarmChange={handlePreparationAdvanceAlarmChange}
+                onTestAlarm={handleTestGlobalAlarm}
+              />
+            )}
             {!showForm ? (
               <div className="text-center py-8">
                 <Button 
@@ -110,12 +175,15 @@ const Index = () => {
                 <ScheduleForm 
                   onSubmit={handleAddSchedule}
                   initialData={editingSchedule ? {
+                    origin: editingSchedule.origin,
                     destination: editingSchedule.destination,
                     arrivalTime: editingSchedule.arrivalTime,
                     transportType: editingSchedule.transportType,
                     preparationTime: editingSchedule.preparationTime,
                     weekdays: editingSchedule.weekdays,
-                    selectedDates: editingSchedule.selectedDates
+                    selectedDates: editingSchedule.selectedDates,
+                    advanceAlarm: editingSchedule.advanceAlarm,
+                    advanceAlarm: editingSchedule.advanceAlarm
                   } : undefined}
                   submitLabel={editingSchedule ? '일정 수정' : '일정 등록'}
                 />
@@ -148,16 +216,28 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Alarm Info */}
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-              <h3 className="font-semibold text-orange-900 mb-2">🔔 알람 기능</h3>
-              <div className="text-orange-800 text-xs space-y-1">
-                <div>• 준비 시작 시간 알람</div>
-                <div>• 출발 시간 알람</div>
-                <div>• 브라우저 알림 + 소리</div>
-                <div>• 각 일정별 활성화/비활성화</div>
+            {/* 알람 설정 안내 */}
+            {!showAlarmSettings && (
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h3 className="font-semibold text-orange-900 mb-2">🔔 알람 설정</h3>
+                <div className="text-orange-800 text-xs space-y-1">
+                  <div>• 기본 알람: 준비 시작, 출발 시간</div>
+                  <div>• 준비 사전 알림: 준비 시작 전 미리 알림</div>
+                  <div>• 출발 사전 알림: 출발 전 미리 알림</div>
+                  <div>• 브라우저 알림 + 소리</div>
+                  <div>• 각 일정별 활성화/비활성화</div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAlarmSettings(true)}
+                  className="mt-3 w-full text-xs"
+                >
+                  <Bell size={12} className="mr-1" />
+                  알람 설정하기
+                </Button>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Right Column - Schedule List */}

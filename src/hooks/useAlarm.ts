@@ -4,24 +4,15 @@ import {
   getNextAlarmTime, 
   createAlarmMessage, 
   showNotification, 
-  playAlarmSound,
-  requestNotificationPermission 
+  playAlarmSound
 } from '@/utils/alarmUtils';
 
 export function useAlarm(schedules: Schedule[]) {
   const alarmTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
-  const notificationPermissionRef = useRef<boolean>(false);
-
-  // 알림 권한 요청
-  const requestPermission = useCallback(async () => {
-    const granted = await requestNotificationPermission();
-    notificationPermissionRef.current = granted;
-    return granted;
-  }, []);
 
   // 알람 설정
   const setAlarm = useCallback((schedule: Schedule) => {
-    const { preparation, departure } = getNextAlarmTime(schedule);
+    const { preparation, departure, advance, preparationAdvance } = getNextAlarmTime(schedule);
     
     // 기존 알람 제거
     const existingTimeout = alarmTimeoutsRef.current.get(schedule.id);
@@ -55,12 +46,40 @@ export function useAlarm(schedules: Schedule[]) {
         alarmTimeoutsRef.current.set(`${schedule.id}-departure`, timeout);
       }
     }
+
+    // 사전 알림 설정
+    if (advance) {
+      const advanceDelay = advance.getTime() - Date.now();
+      if (advanceDelay > 0) {
+        const timeout = setTimeout(() => {
+          const message = createAlarmMessage(schedule, 'advance');
+          showNotification('사전 알림', message);
+          playAlarmSound();
+        }, advanceDelay);
+        alarmTimeoutsRef.current.set(`${schedule.id}-advance`, timeout);
+      }
+    }
+
+    // 준비 사전 알림 설정
+    if (preparationAdvance) {
+      const preparationAdvanceDelay = preparationAdvance.getTime() - Date.now();
+      if (preparationAdvanceDelay > 0) {
+        const timeout = setTimeout(() => {
+          const message = createAlarmMessage(schedule, 'preparation-advance');
+          showNotification('준비 사전 알림', message);
+          playAlarmSound();
+        }, preparationAdvanceDelay);
+        alarmTimeoutsRef.current.set(`${schedule.id}-preparation-advance`, timeout);
+      }
+    }
   }, []);
 
   // 알람 제거
   const clearAlarm = useCallback((scheduleId: string) => {
     const preparationTimeout = alarmTimeoutsRef.current.get(`${scheduleId}-preparation`);
     const departureTimeout = alarmTimeoutsRef.current.get(`${scheduleId}-departure`);
+    const advanceTimeout = alarmTimeoutsRef.current.get(`${scheduleId}-advance`);
+    const preparationAdvanceTimeout = alarmTimeoutsRef.current.get(`${scheduleId}-preparation-advance`);
     
     if (preparationTimeout) {
       clearTimeout(preparationTimeout);
@@ -71,6 +90,16 @@ export function useAlarm(schedules: Schedule[]) {
       clearTimeout(departureTimeout);
       alarmTimeoutsRef.current.delete(`${scheduleId}-departure`);
     }
+
+    if (advanceTimeout) {
+      clearTimeout(advanceTimeout);
+      alarmTimeoutsRef.current.delete(`${scheduleId}-advance`);
+    }
+
+    if (preparationAdvanceTimeout) {
+      clearTimeout(preparationAdvanceTimeout);
+      alarmTimeoutsRef.current.delete(`${scheduleId}-preparation-advance`);
+    }
   }, []);
 
   // 모든 알람 제거
@@ -80,9 +109,11 @@ export function useAlarm(schedules: Schedule[]) {
   }, []);
 
   // 알람 테스트
-  const testAlarm = useCallback((schedule: Schedule, type: 'preparation' | 'departure' = 'departure') => {
+  const testAlarm = useCallback((schedule: Schedule, type: 'preparation' | 'departure' | 'advance' | 'preparation-advance' = 'departure') => {
     const message = createAlarmMessage(schedule, type);
-    const title = type === 'preparation' ? '준비 알람 테스트' : '출발 알람 테스트';
+    const title = type === 'preparation' ? '준비 알람 테스트' : 
+                  type === 'advance' ? '사전 알림 테스트' : 
+                  type === 'preparation-advance' ? '준비 사전 알림 테스트' : '출발 알람 테스트';
     showNotification(title, message);
     playAlarmSound();
   }, []);
@@ -105,17 +136,10 @@ export function useAlarm(schedules: Schedule[]) {
     };
   }, [schedules, setAlarm, clearAllAlarms]);
 
-  // 컴포넌트 마운트 시 알림 권한 요청
-  useEffect(() => {
-    requestPermission();
-  }, [requestPermission]);
-
   return {
     setAlarm,
     clearAlarm,
     clearAllAlarms,
-    testAlarm,
-    requestPermission,
-    hasPermission: notificationPermissionRef.current
+    testAlarm
   };
 } 

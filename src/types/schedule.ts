@@ -1,6 +1,7 @@
 export interface Schedule {
   id: string;
-  destination: string;
+  origin: string; // 출발지
+  destination: string; // 도착지
   arrivalTime: string; // HH:MM format
   transportType: 'subway' | 'bus' | 'walk' | 'bicycle' | 'car';
   preparationTime: number; // minutes
@@ -10,6 +11,14 @@ export interface Schedule {
   selectedDates?: Date[]; // 선택된 날짜들 (선택사항)
   createdAt: Date;
   isActive?: boolean; // 알람 활성화 상태
+  advanceAlarm?: {
+    enabled: boolean;
+    minutes: number; // 몇 분 전에 알림할지
+  };
+  preparationAdvanceAlarm?: {
+    enabled: boolean;
+    minutes: number; // 준비 시작 몇 분 전에 알림할지
+  };
 }
 
 export interface TrafficData {
@@ -40,5 +49,6 @@ export interface AlarmInfo {
   destination: string;
   departureTime: string;
   preparationStartTime: string;
-  type: 'departure' | 'preparation';
+  type: 'departure' | 'preparation' | 'advance' | 'preparation-advance';
+  advanceMinutes?: number;
 }

@@ -12,7 +12,7 @@ interface ScheduleListProps {
   onDeleteSchedule: (id: string) => void;
   onEditSchedule?: (schedule: Schedule) => void;
   onToggleActive?: (id: string) => void;
-  onTestAlarm?: (schedule: Schedule, type: 'preparation' | 'departure') => void;
+  onTestAlarm?: (schedule: Schedule, type: 'preparation' | 'departure' | 'advance') => void;
   onToggleGroupActive?: (scheduleIds: string[], active: boolean) => void;
   onDeleteGroup?: (scheduleIds: string[]) => void;
 }

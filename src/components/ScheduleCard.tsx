@@ -15,7 +15,7 @@ interface ScheduleCardProps {
   onDelete: (id: string) => void;
   onEdit?: (schedule: Schedule) => void;
   onToggleActive?: (id: string) => void;
-  onTestAlarm?: (schedule: Schedule, type: 'preparation' | 'departure') => void;
+  onTestAlarm?: (schedule: Schedule, type: 'preparation' | 'departure' | 'advance') => void;
 }
 
 const transportIcons = {
@@ -46,7 +46,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   
   // 교통 시간 계산
   const [hour] = schedule.arrivalTime.split(':').map(Number);
-  const trafficDuration = getTrafficTime('잠실 루터회관', schedule.destination, schedule.transportType, hour);
+  const trafficDuration = getTrafficTime(schedule.origin, schedule.destination, schedule.transportType, hour);
 
   const formatWeekdays = (weekdays: string[]) => {
     if (weekdays.length === 7) return '매일';
@@ -101,12 +101,27 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
           <MapPin className="text-green-600" size={20} />
           <div>
             <h3 className="font-semibold text-lg text-gray-900">{schedule.destination}</h3>
+            <div className="text-sm text-gray-600 mt-1">
+              {schedule.origin} → {schedule.destination}
+            </div>
             <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
               <TransportIcon size={16} />
               <span>{transportLabels[schedule.transportType]}</span>
               <span>•</span>
               <span>준비시간 {schedule.preparationTime}분</span>
             </div>
+            {schedule.preparationAdvanceAlarm?.enabled && (
+              <div className="flex items-center space-x-2 text-sm text-green-600 mt-1">
+                <Bell size={14} />
+                <span className="font-medium">준비 사전 알림 {schedule.preparationAdvanceAlarm.minutes}분 전</span>
+              </div>
+            )}
+            {schedule.advanceAlarm?.enabled && (
+              <div className="flex items-center space-x-2 text-sm text-orange-600 mt-1">
+                <Bell size={14} />
+                <span className="font-medium">출발 사전 알림 {schedule.advanceAlarm.minutes}분 전</span>
+              </div>
+            )}
             {scheduleInfo && (
               <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
                 <scheduleInfo.icon size={14} />
@@ -141,6 +156,18 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
                   <MapPin size={14} className="mr-2" />
                   출발 알람 테스트
                 </DropdownMenuItem>
+                {schedule.preparationAdvanceAlarm?.enabled && (
+                  <DropdownMenuItem onClick={() => onTestAlarm(schedule, 'preparation-advance')}>
+                    <Bell size={14} className="mr-2" />
+                    준비 사전 알림 테스트 ({schedule.preparationAdvanceAlarm.minutes}분 전)
+                  </DropdownMenuItem>
+                )}
+                {schedule.advanceAlarm?.enabled && (
+                  <DropdownMenuItem onClick={() => onTestAlarm(schedule, 'advance')}>
+                    <Bell size={14} className="mr-2" />
+                    출발 사전 알림 테스트 ({schedule.advanceAlarm.minutes}분 전)
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -191,6 +218,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       {showTrafficDetail && (
         <div className="mt-4">
           <TrafficDetailBox
+            origin={schedule.origin}
             destination={schedule.destination}
             transportType={schedule.transportType}
             arrivalTime={schedule.arrivalTime}
