@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2, Edit, MapPin, Bus, Car, Bike, Calendar, Clock, Bell, Volume2, ChevronDown, Info } from 'lucide-react';
+import { Trash2, Edit, MapPin, Bus, Car, Bike, Calendar, Clock, Bell, Volume2, ChevronDown, Info, ChevronRight } from 'lucide-react';
 import { Schedule, WEEKDAY_LABELS } from '@/types/schedule';
 import TimeDisplay from './TimeDisplay';
 import TrafficDetailBox from './TrafficDetailBox';
@@ -89,153 +89,204 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <MapPin className="text-green-600" size={20} />
-          <div>
-            <h3 className="font-semibold text-lg text-gray-900">{schedule.destination}</h3>
-            <div className="text-sm text-gray-600 mt-1">
+      {/* 🎯 최우선 정보 - 항상 표시 */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center space-x-3 flex-1">
+          <MapPin className="text-blue-600" size={18} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-2">
+              <h3 className="font-semibold text-gray-900 truncate">{schedule.destination}</h3>
+              <span className="text-blue-600 font-medium text-sm">{schedule.arrivalTime}</span>
+            </div>
+            <div className="text-sm text-gray-600 truncate">
               {schedule.origin} → {schedule.destination}
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
-              <TransportIcon size={16} />
-              <span>{TRANSPORT_LABELS[schedule.transportType]}</span>
-              <span>•</span>
-              <span>준비시간 {schedule.preparationTime}분</span>
-            </div>
-            {schedule.preparationAdvanceAlarm?.enabled && (
-              <div className="flex items-center space-x-2 text-sm text-green-600 mt-1">
-                <Bell size={14} />
-                <span className="font-medium">준비 사전 알림 {schedule.preparationAdvanceAlarm.minutes}분 전</span>
-              </div>
-            )}
-            {schedule.advanceAlarm?.enabled && (
-              <div className="flex items-center space-x-2 text-sm text-orange-600 mt-1">
-                <Bell size={14} />
-                <span className="font-medium">출발 사전 알림 {schedule.advanceAlarm.minutes}분 전</span>
-              </div>
-            )}
-            {schedule.memo && (
-              <div className="flex items-start space-x-2 text-sm text-gray-700 mt-2 p-2 bg-gray-50 rounded">
-                <span className="text-gray-500">📝</span>
-                <span className="text-xs">{schedule.memo}</span>
-              </div>
-            )}
-            {scheduleInfo && (
-              <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
-                <scheduleInfo.icon size={14} />
-                <span className="text-blue-600 font-medium">{scheduleInfo.label}</span>
-                <span>•</span>
-                <span>{scheduleInfo.detail}</span>
-              </div>
-            )}
           </div>
         </div>
         
-        <div className="flex space-x-2">
-          {onTestAlarm && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-600 hover:text-orange-600"
-                  title="알람 테스트"
-                >
-                  <Volume2 size={16} />
-                  <ChevronDown size={12} className="ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onTestAlarm(schedule, 'preparation')}>
-                  <Clock size={14} className="mr-2" />
-                  준비 알람 테스트
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onTestAlarm(schedule, 'departure')}>
-                  <MapPin size={14} className="mr-2" />
-                  출발 알람 테스트
-                </DropdownMenuItem>
-                {schedule.preparationAdvanceAlarm?.enabled && (
-                  <DropdownMenuItem onClick={() => onTestAlarm(schedule, 'preparation-advance')}>
-                    <Bell size={14} className="mr-2" />
-                    준비 사전 알림 테스트 ({schedule.preparationAdvanceAlarm.minutes}분 전)
-                  </DropdownMenuItem>
-                )}
-                {schedule.advanceAlarm?.enabled && (
-                  <DropdownMenuItem onClick={() => onTestAlarm(schedule, 'advance')}>
-                    <Bell size={14} className="mr-2" />
-                    출발 사전 알림 테스트 ({schedule.advanceAlarm.minutes}분 전)
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+        {/* 액션 버튼들 - 알람 아이콘 포함 */}
+        <div className="flex items-center space-x-1 ml-2">
+          {/* 알람 활성화 아이콘 */}
+          {onToggleActive && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onToggleActive(schedule.id)}
+              className={`p-1 ${
+                schedule.isActive !== false 
+                  ? 'text-green-600 hover:text-green-700' 
+                  : 'text-gray-400 hover:text-gray-600'
+              }`}
+              title={schedule.isActive !== false ? '알람 활성화됨' : '알람 비활성화됨'}
+            >
+              <Bell size={14} />
+            </Button>
           )}
+          
+          {/* 편집 버튼 */}
           {onEdit && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onEdit(schedule)}
-              className="text-gray-600 hover:text-blue-600"
+              className="text-gray-600 hover:text-blue-600 p-1"
             >
-              <Edit size={16} />
+              <Edit size={14} />
             </Button>
           )}
+          
+          {/* 삭제 버튼 */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onDelete(schedule.id)}
-            className="text-gray-600 hover:text-red-600"
+            className="text-gray-600 hover:text-red-600 p-1"
           >
-            <Trash2 size={16} />
+            <Trash2 size={14} />
           </Button>
         </div>
       </div>
 
-      <TimeDisplay
-        preparationStartTime={schedule.preparationStartTime}
-        departureTime={schedule.departureTime}
-        arrivalTime={schedule.arrivalTime}
-      />
-
-      {/* 교통 상세 정보 토글 버튼 */}
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-        <div className="flex items-center space-x-2">
-          <Info size={16} className="text-gray-600" />
-          <span className="text-sm text-gray-700">교통 상세 정보</span>
+      {/* ⚡ 중요 정보 - 간단히 표시 */}
+      <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
+        <div className="flex items-center space-x-3">
+          {/* 일정 유형과 날짜 정보를 먼저 표시 */}
+          {scheduleInfo && (
+            <>
+              <div className="flex items-center space-x-1">
+                <scheduleInfo.icon size={12} />
+                <span className="text-blue-600">{scheduleInfo.label}</span>
+              </div>
+              <span>•</span>
+              <span>{scheduleInfo.detail}</span>
+              <span>•</span>
+            </>
+          )}
+          
+          {/* 이동 수단과 준비 시간 */}
+          <div className="flex items-center space-x-1">
+            <TransportIcon size={14} />
+            <span>{TRANSPORT_LABELS[schedule.transportType]}</span>
+          </div>
+          <span>•</span>
+          <span>준비 {schedule.preparationTime}분</span>
         </div>
+        
+        {/* 사전 알람 상태 표시 */}
+        <div className="flex items-center space-x-1">
+          {(schedule.preparationAdvanceAlarm?.enabled || schedule.advanceAlarm?.enabled) && (
+            <Bell size={12} className="text-orange-500" />
+          )}
+        </div>
+      </div>
+
+      {/* 📝 메모 - 있을 때만 간단히 표시 */}
+      {schedule.memo && (
+        <div className="text-xs text-gray-600 mb-3 p-2 bg-gray-50 rounded">
+          📝 {schedule.memo.length > 50 ? `${schedule.memo.substring(0, 50)}...` : schedule.memo}
+        </div>
+      )}
+
+      {/* 시간 정보 - 항상 표시 */}
+      <div className="mt-3 pt-3 border-t border-gray-100">
+        <TimeDisplay
+          preparationStartTime={schedule.preparationStartTime}
+          departureTime={schedule.departureTime}
+          arrivalTime={schedule.arrivalTime}
+        />
+      </div>
+
+      {/* 알람 설정 정보 - 있을 때만 표시 */}
+      {(schedule.preparationAdvanceAlarm?.enabled || schedule.advanceAlarm?.enabled) && (
+        <div className="mt-3 pt-3 border-t border-gray-100 space-y-1">
+          {schedule.preparationAdvanceAlarm?.enabled && (
+            <div className="flex items-center space-x-2 text-xs text-green-600">
+              <Bell size={12} />
+              <span>준비 사전 알림 {schedule.preparationAdvanceAlarm.minutes}분 전</span>
+            </div>
+          )}
+          {schedule.advanceAlarm?.enabled && (
+            <div className="flex items-center space-x-2 text-xs text-orange-600">
+              <Bell size={12} />
+              <span>출발 사전 알림 {schedule.advanceAlarm.minutes}분 전</span>
+            </div>
+          )}
+        </div>
+      )}
+
+    
+
+      {/* 알람 테스트 - 있을 때만 표시 */}
+      {onTestAlarm && (
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs text-gray-600 hover:text-orange-600"
+              >
+                <Volume2 size={12} className="mr-1" />
+                알람 테스트
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onTestAlarm(schedule, 'preparation')}>
+                <Clock size={12} className="mr-2" />
+                준비 알람 테스트
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onTestAlarm(schedule, 'departure')}>
+                <MapPin size={12} className="mr-2" />
+                출발 알람 테스트
+              </DropdownMenuItem>
+              {schedule.preparationAdvanceAlarm?.enabled && (
+                <DropdownMenuItem onClick={() => onTestAlarm(schedule, 'preparation-advance')}>
+                  <Bell size={12} className="mr-2" />
+                  준비 사전 알림 테스트
+                </DropdownMenuItem>
+              )}
+              {schedule.advanceAlarm?.enabled && (
+                <DropdownMenuItem onClick={() => onTestAlarm(schedule, 'advance')}>
+                  <Bell size={12} className="mr-2" />
+                  출발 사전 알림 테스트
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
+
+      {/* 교통 상세 정보 토글 - 맨 아래 */}
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setShowTrafficDetail(!showTrafficDetail)}
-          className="text-blue-600 hover:text-blue-700"
+          className="text-blue-600 hover:text-blue-700 text-xs p-1"
         >
-          {showTrafficDetail ? '접기' : '보기'}
+          {showTrafficDetail ? (
+            <>
+              <ChevronDown size={12} className="mr-1" />
+              교통 상세 정보 접기
+            </>
+          ) : (
+            <>
+              <ChevronRight size={12} className="mr-1" />
+              교통 상세 정보 보기
+            </>
+          )}
         </Button>
       </div>
 
-      {/* 교통 상세 정보 박스 */}
+      {/* 교통 상세 정보 */}
       {showTrafficDetail && (
-        <div className="mt-4">
+        <div className="mt-3 pt-3 border-t border-gray-100">
           <TrafficDetailBox
             origin={schedule.origin}
             destination={schedule.destination}
             transportType={schedule.transportType}
             arrivalTime={schedule.arrivalTime}
             trafficDuration={trafficDuration}
-          />
-        </div>
-      )}
-
-      {/* 알람 활성화 토글 */}
-      {onToggleActive && (
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-          <div className="flex items-center space-x-2">
-            <Bell size={16} className="text-gray-600" />
-            <span className="text-sm text-gray-700">알람 활성화</span>
-          </div>
-          <Switch
-            checked={schedule.isActive !== false}
-            onCheckedChange={() => onToggleActive(schedule.id)}
           />
         </div>
       )}
