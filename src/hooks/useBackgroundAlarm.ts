@@ -56,7 +56,7 @@ export function useBackgroundAlarm(schedules: Schedule[]) {
     return permission === 'granted';
   }, []);
 
-  // 브라우저 알림 표시
+  // 브라우저 알림 표시 (Windows 11 최적화)
   const showNotification = useCallback(
     (
       title: string,
@@ -75,22 +75,77 @@ export function useBackgroundAlarm(schedules: Schedule[]) {
       }
 
       try {
+        // 기존 알림들을 모두 닫기 (Windows 11 배너 문제 해결)
+        if ('Notification' in window) {
+          // 기존 알림 닫기
+          const existingNotifications = (window as any).__notifications || [];
+          existingNotifications.forEach((notification: Notification) => {
+            try {
+              notification.close();
+            } catch (e) {
+              console.log('기존 알림 닫기 실패:', e);
+            }
+          });
+        }
+
+        // Windows 11에서 배너 알림이 제대로 표시되도록 설정
         const notification = new Notification(title, {
           body,
           icon: '/pwa-192x192.png',
           badge: '/pwa-192x192.png',
-          requireInteraction: true,
+          requireInteraction: true, // 사용자가 직접 닫을 때까지 유지
           silent: false,
           tag: `${scheduleId}-${alarmType}`,
           data: { scheduleId, alarmType, scheduleData },
         });
 
-        console.log('✅ 브라우저 알림 생성됨');
+        // 알림 추적을 위한 배열에 추가
+        if (!(window as any).__notifications) {
+          (window as any).__notifications = [];
+        }
+        (window as any).__notifications.push(notification);
+
+        console.log('✅ 브라우저 알림 생성됨 (Windows 11 최적화)');
 
         // 알림 클릭 시 앱 포커스
-        notification.onclick = () => {
+        notification.onclick = (event) => {
+          console.log('🔔 알림 클릭됨:', event);
           notification.close();
+
+          // 추적 배열에서 제거
+          const notifications = (window as any).__notifications || [];
+          const index = notifications.indexOf(notification);
+          if (index > -1) {
+            notifications.splice(index, 1);
+          }
+
           window.focus();
+
+          // Windows 11에서 알림 센터로 이동하지 않도록 방지
+          if (event.preventDefault) {
+            event.preventDefault();
+          }
+        };
+
+        // 알림이 표시되었는지 확인
+        notification.onshow = () => {
+          console.log('🔔 알림이 화면에 표시됨');
+        };
+
+        notification.onerror = (error: Event) => {
+          console.error('❌ 알림 표시 오류:', error);
+          // 오류 시 alert로 대체
+          alert(`${title}\n${body}`);
+        };
+
+        // 알림이 닫힐 때 추적 배열에서 제거
+        notification.onclose = () => {
+          console.log('🔔 알림이 닫힘');
+          const notifications = (window as any).__notifications || [];
+          const index = notifications.indexOf(notification);
+          if (index > -1) {
+            notifications.splice(index, 1);
+          }
         };
       } catch (error) {
         console.error('❌ 브라우저 알림 생성 실패:', error);
@@ -212,6 +267,41 @@ export function useBackgroundAlarm(schedules: Schedule[]) {
     });
   }, []);
 
+  // Windows 알림 센터 강제 새로고침 (Windows 11 배너 문제 해결)
+  const refreshNotificationCenter = useCallback(() => {
+    try {
+      // Windows 알림 센터를 강제로 새로고침
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          registrations.forEach((registration) => {
+            if (registration.active) {
+              registration.active.postMessage({
+                type: 'REFRESH_NOTIFICATIONS',
+              });
+            }
+          });
+        });
+      }
+
+      // 기존 알림들을 모두 닫기
+      const existingNotifications = (window as any).__notifications || [];
+      existingNotifications.forEach((notification: Notification) => {
+        try {
+          notification.close();
+        } catch (e) {
+          console.log('기존 알림 닫기 실패:', e);
+        }
+      });
+
+      // 배열 초기화
+      (window as any).__notifications = [];
+
+      console.log('🔄 Windows 알림 센터 새로고침 완료');
+    } catch (error) {
+      console.error('❌ 알림 센터 새로고침 실패:', error);
+    }
+  }, []);
+
   // 알람 테스트 (개선된 버전)
   const testBackgroundAlarm = useCallback(
     (
@@ -239,8 +329,11 @@ export function useBackgroundAlarm(schedules: Schedule[]) {
         return;
       }
 
-      // 3초 후 테스트 알람 실행
-      const testTime = Date.now() + 3000;
+      // Windows 알림 센터 새로고침 (기존 알림 정리)
+      refreshNotificationCenter();
+
+      // 1초 후 테스트 알람 실행
+      const testTime = Date.now() + 1000;
       console.log('⏰ 테스트 알람 설정:', { testTime, type });
 
       try {
@@ -257,7 +350,7 @@ export function useBackgroundAlarm(schedules: Schedule[]) {
         alert('알람 테스트 설정에 실패했습니다.');
       }
     },
-    []
+    [refreshNotificationCenter]
   );
 
   // 초기화
@@ -321,5 +414,6 @@ export function useBackgroundAlarm(schedules: Schedule[]) {
     clearAllBackgroundAlarms,
     testBackgroundAlarm,
     requestNotificationPermission,
+    refreshNotificationCenter,
   };
 }
