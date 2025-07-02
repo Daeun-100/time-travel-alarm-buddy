@@ -170,7 +170,11 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full justify-start text-left font-normal"
+                className={`w-full justify-start text-left font-normal transition-all duration-300 ${
+                  selectedDates.length > 0 
+                    ? 'border-blue-400 focus:border-blue-500 focus:ring-blue-200' 
+                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-200'
+                }`}
               >
                 <Calendar className="mr-2 h-4 w-4" />
                 {selectedDates.length > 0 
@@ -263,7 +267,11 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
           value={origin}
           onChange={(e) => setOrigin(e.target.value)}
           placeholder="예: 잠실 루터회관, 잠실역"
-          className="w-full"
+          className={`w-full transition-all duration-300 ${
+            origin.trim() 
+              ? 'border-blue-400 focus:border-blue-500 focus:ring-blue-200' 
+              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-200'
+          }`}
         />
         <div className="flex flex-wrap gap-2 mt-2">
           {POPULAR_ORIGINS.map((place) => (
@@ -289,7 +297,11 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
           value={destination}
           onChange={(e) => setDestination(e.target.value)}
           placeholder="예: 행성대학교, 강남역"
-          className="w-full"
+          className={`w-full transition-all duration-300 ${
+            destination.trim() 
+              ? 'border-blue-400 focus:border-blue-500 focus:ring-blue-200' 
+              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-200'
+          }`}
         />
         <div className="flex flex-wrap gap-2 mt-2">
           {POPULAR_DESTINATIONS.map((place) => (
@@ -314,14 +326,22 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
           type="time"
           value={arrivalTime}
           onChange={(e) => setArrivalTime(e.target.value)}
-          className="w-full"
+          className={`w-full transition-all duration-300 ${
+            arrivalTime 
+              ? 'border-blue-400 focus:border-blue-500 focus:ring-blue-200' 
+              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-200'
+          }`}
         />
       </div>
 
       <div className="space-y-2">
         <Label>이동 수단</Label>
         <Select value={transportType} onValueChange={(value: TransportType) => setTransportType(value)}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger className={`w-full transition-all duration-300 ${
+            transportType 
+              ? 'border-blue-400 focus:border-blue-500 focus:ring-blue-200' 
+              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-200'
+          }`}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -350,7 +370,11 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
           step="5"
           value={preparationTime}
           onChange={(e) => setPreparationTime(Number(e.target.value))}
-          className="w-full"
+          className={`w-full transition-all duration-300 ${
+            preparationTime > 0 
+              ? 'border-blue-400 focus:border-blue-500 focus:ring-blue-200' 
+              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-200'
+          }`}
         />
       </div>
 
@@ -361,7 +385,11 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
           value={memo}
           onChange={(e) => setMemo(e.target.value)}
           placeholder="예: 중요한 회의, 준비물, 특별한 일정 등"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 resize-none transition-all duration-300 ${
+            memo.trim() 
+              ? 'border-blue-400 focus:border-blue-500 focus:ring-blue-200' 
+              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-200'
+          }`}
           rows={3}
           maxLength={200}
         />
