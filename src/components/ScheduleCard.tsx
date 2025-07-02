@@ -1,11 +1,30 @@
 import React, { useState } from 'react';
-import { Trash2, Edit, MapPin, Bus, Car, Bike, Calendar, Clock, Bell, Volume2, ChevronDown, Info, ChevronRight } from 'lucide-react';
+import {
+  Trash2,
+  Edit,
+  MapPin,
+  Bus,
+  Car,
+  Bike,
+  Calendar,
+  Clock,
+  Bell,
+  Volume2,
+  ChevronDown,
+  Info,
+  ChevronRight,
+} from 'lucide-react';
 import { Schedule, WEEKDAY_LABELS } from '@/types/schedule';
 import TimeDisplay from './TimeDisplay';
 import TrafficDetailBox from './TrafficDetailBox';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { getTrafficTime } from '@/utils/timeCalculator';
@@ -14,9 +33,13 @@ import { TRANSPORT_LABELS } from '@/mocks/trafficData';
 interface ScheduleCardProps {
   schedule: Schedule;
   onDelete: (id: string) => void;
-  onEdit?: (schedule: Schedule) => void;
-  onToggleActive?: (id: string) => void;
-  onTestAlarm?: (schedule: Schedule, type: 'preparation' | 'departure' | 'advance' | 'preparation-advance') => void;
+  onEdit: (schedule: Schedule) => void;
+  onToggleActive: (id: string) => void;
+  onTestAlarm?: (
+    schedule: Schedule,
+    type: 'preparation' | 'departure' | 'advance' | 'preparation-advance'
+  ) => Promise<void>;
+  className?: string;
 }
 
 const transportIcons = {
@@ -24,39 +47,50 @@ const transportIcons = {
   bus: Bus,
   car: Car,
   bicycle: Bike,
-  walk: MapPin // Using MapPin for walk since it's more appropriate
+  walk: MapPin, // Using MapPin for walk since it's more appropriate
 };
 
-const ScheduleCard: React.FC<ScheduleCardProps> = ({ 
-  schedule, 
-  onDelete, 
-  onEdit, 
+const ScheduleCard: React.FC<ScheduleCardProps> = ({
+  schedule,
+  onDelete,
+  onEdit,
   onToggleActive,
-  onTestAlarm 
+  onTestAlarm,
 }) => {
   const [showTrafficDetail, setShowTrafficDetail] = useState(false);
   const TransportIcon = transportIcons[schedule.transportType];
-  
+
   // 교통 시간 계산
   const [hour] = schedule.arrivalTime.split(':').map(Number);
-  const trafficDuration = getTrafficTime(schedule.origin, schedule.destination, schedule.transportType, hour);
+  const trafficDuration = getTrafficTime(
+    schedule.origin,
+    schedule.destination,
+    schedule.transportType,
+    hour
+  );
 
   const formatWeekdays = (weekdays: string[]) => {
     if (weekdays.length === 7) return '매일';
-    if (weekdays.length === 5 && 
-        weekdays.includes('monday') && 
-        weekdays.includes('tuesday') && 
-        weekdays.includes('wednesday') && 
-        weekdays.includes('thursday') && 
-        weekdays.includes('friday')) {
+    if (
+      weekdays.length === 5 &&
+      weekdays.includes('monday') &&
+      weekdays.includes('tuesday') &&
+      weekdays.includes('wednesday') &&
+      weekdays.includes('thursday') &&
+      weekdays.includes('friday')
+    ) {
       return '평일';
     }
-    if (weekdays.length === 2 && 
-        weekdays.includes('saturday') && 
-        weekdays.includes('sunday')) {
+    if (
+      weekdays.length === 2 &&
+      weekdays.includes('saturday') &&
+      weekdays.includes('sunday')
+    ) {
       return '주말';
     }
-    return weekdays.map(day => WEEKDAY_LABELS[day as keyof typeof WEEKDAY_LABELS]).join(', ');
+    return weekdays
+      .map((day) => WEEKDAY_LABELS[day as keyof typeof WEEKDAY_LABELS])
+      .join(', ');
   };
 
   const formatSelectedDates = (dates: Date[]) => {
@@ -72,14 +106,14 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
         type: 'one-time',
         icon: Calendar,
         label: '일회성',
-        detail: formatSelectedDates(schedule.selectedDates)
+        detail: formatSelectedDates(schedule.selectedDates),
       };
     } else if (schedule.weekdays && schedule.weekdays.length > 0) {
       return {
         type: 'recurring',
         icon: Clock,
         label: '반복',
-        detail: formatWeekdays(schedule.weekdays)
+        detail: formatWeekdays(schedule.weekdays),
       };
     }
     return null;
@@ -95,15 +129,19 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
           <MapPin className="text-blue-600" size={18} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2">
-              <h3 className="font-semibold text-gray-900 truncate">{schedule.destination}</h3>
-              <span className="text-blue-600 font-medium text-sm">{schedule.arrivalTime}</span>
+              <h3 className="font-semibold text-gray-900 truncate">
+                {schedule.destination}
+              </h3>
+              <span className="text-blue-600 font-medium text-sm">
+                {schedule.arrivalTime}
+              </span>
             </div>
             <div className="text-sm text-gray-600 truncate">
               {schedule.origin} → {schedule.destination}
             </div>
           </div>
         </div>
-        
+
         {/* 액션 버튼들 - 알람 아이콘 포함 */}
         <div className="flex items-center space-x-1 ml-2">
           {/* 알람 활성화 아이콘 */}
@@ -113,16 +151,20 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
               size="sm"
               onClick={() => onToggleActive(schedule.id)}
               className={`p-1 ${
-                schedule.isActive !== false 
-                  ? 'text-green-600 hover:text-green-700' 
+                schedule.isActive !== false
+                  ? 'text-green-600 hover:text-green-700'
                   : 'text-gray-400 hover:text-gray-600'
               }`}
-              title={schedule.isActive !== false ? '알람 활성화됨' : '알람 비활성화됨'}
+              title={
+                schedule.isActive !== false
+                  ? '알람 활성화됨'
+                  : '알람 비활성화됨'
+              }
             >
               <Bell size={14} />
             </Button>
           )}
-          
+
           {/* 편집 버튼 */}
           {onEdit && (
             <Button
@@ -134,7 +176,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
               <Edit size={14} />
             </Button>
           )}
-          
+
           {/* 삭제 버튼 */}
           <Button
             variant="ghost"
@@ -162,7 +204,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
               <span>•</span>
             </>
           )}
-          
+
           {/* 이동 수단과 준비 시간 */}
           <div className="flex items-center space-x-1">
             <TransportIcon size={14} />
@@ -171,10 +213,11 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
           <span>•</span>
           <span>준비 {schedule.preparationTime}분</span>
         </div>
-        
+
         {/* 사전 알람 상태 표시 */}
         <div className="flex items-center space-x-1">
-          {(schedule.preparationAdvanceAlarm?.enabled || schedule.advanceAlarm?.enabled) && (
+          {(schedule.preparationAdvanceAlarm?.enabled ||
+            schedule.advanceAlarm?.enabled) && (
             <Bell size={12} className="text-orange-500" />
           )}
         </div>
@@ -183,7 +226,10 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       {/* 📝 메모 - 있을 때만 간단히 표시 */}
       {schedule.memo && (
         <div className="text-xs text-gray-600 mb-3 p-2 bg-gray-50 rounded">
-          📝 {schedule.memo.length > 50 ? `${schedule.memo.substring(0, 50)}...` : schedule.memo}
+          📝{' '}
+          {schedule.memo.length > 50
+            ? `${schedule.memo.substring(0, 50)}...`
+            : schedule.memo}
         </div>
       )}
 
@@ -197,12 +243,15 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       </div>
 
       {/* 알람 설정 정보 - 있을 때만 표시 */}
-      {(schedule.preparationAdvanceAlarm?.enabled || schedule.advanceAlarm?.enabled) && (
+      {(schedule.preparationAdvanceAlarm?.enabled ||
+        schedule.advanceAlarm?.enabled) && (
         <div className="mt-3 pt-3 border-t border-gray-100 space-y-1">
           {schedule.preparationAdvanceAlarm?.enabled && (
             <div className="flex items-center space-x-2 text-xs text-green-600">
               <Bell size={12} />
-              <span>준비 사전 알림 {schedule.preparationAdvanceAlarm.minutes}분 전</span>
+              <span>
+                준비 사전 알림 {schedule.preparationAdvanceAlarm.minutes}분 전
+              </span>
             </div>
           )}
           {schedule.advanceAlarm?.enabled && (
@@ -213,8 +262,6 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
           )}
         </div>
       )}
-
-    
 
       {/* 알람 테스트 - 있을 때만 표시 */}
       {onTestAlarm && (
@@ -231,22 +278,30 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onTestAlarm(schedule, 'preparation')}>
+              <DropdownMenuItem
+                onClick={() => onTestAlarm(schedule, 'preparation')}
+              >
                 <Clock size={12} className="mr-2" />
                 준비 알람 테스트
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onTestAlarm(schedule, 'departure')}>
+              <DropdownMenuItem
+                onClick={() => onTestAlarm(schedule, 'departure')}
+              >
                 <MapPin size={12} className="mr-2" />
                 출발 알람 테스트
               </DropdownMenuItem>
               {schedule.preparationAdvanceAlarm?.enabled && (
-                <DropdownMenuItem onClick={() => onTestAlarm(schedule, 'preparation-advance')}>
+                <DropdownMenuItem
+                  onClick={() => onTestAlarm(schedule, 'preparation-advance')}
+                >
                   <Bell size={12} className="mr-2" />
                   준비 사전 알림 테스트
                 </DropdownMenuItem>
               )}
               {schedule.advanceAlarm?.enabled && (
-                <DropdownMenuItem onClick={() => onTestAlarm(schedule, 'advance')}>
+                <DropdownMenuItem
+                  onClick={() => onTestAlarm(schedule, 'advance')}
+                >
                   <Bell size={12} className="mr-2" />
                   출발 사전 알림 테스트
                 </DropdownMenuItem>

@@ -5,7 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 interface AlarmSettingsProps {
   advanceAlarm: {
@@ -18,7 +24,7 @@ interface AlarmSettingsProps {
   };
   onAdvanceAlarmChange: (enabled: boolean, minutes: number) => void;
   onPreparationAdvanceAlarmChange: (enabled: boolean, minutes: number) => void;
-  onTestAlarm?: () => void;
+  onTestAlarm?: () => Promise<void>;
   className?: string;
 }
 
@@ -28,7 +34,7 @@ const AlarmSettings: React.FC<AlarmSettingsProps> = ({
   onAdvanceAlarmChange,
   onPreparationAdvanceAlarmChange,
   onTestAlarm,
-  className = ''
+  className = '',
 }) => {
   const handleAdvanceAlarmToggle = (enabled: boolean) => {
     onAdvanceAlarmChange(enabled, advanceAlarm.minutes);
@@ -57,7 +63,7 @@ const AlarmSettings: React.FC<AlarmSettingsProps> = ({
           일정별 알람을 어떻게 받을지 설정하세요
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         {/* 기본 알람 정보 */}
         <div className="space-y-3">
@@ -83,7 +89,7 @@ const AlarmSettings: React.FC<AlarmSettingsProps> = ({
             <AlertTriangle className="text-green-600" size={16} />
             <span className="font-medium text-gray-900">준비 사전 알림</span>
           </div>
-          
+
           <div className="ml-6 space-y-3">
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -91,14 +97,20 @@ const AlarmSettings: React.FC<AlarmSettingsProps> = ({
                 checked={preparationAdvanceAlarm.enabled}
                 onCheckedChange={handlePreparationAdvanceAlarmToggle}
               />
-              <Label htmlFor="preparationAdvanceAlarm" className="cursor-pointer text-sm">
+              <Label
+                htmlFor="preparationAdvanceAlarm"
+                className="cursor-pointer text-sm"
+              >
                 준비 시작 시간보다 미리 알림받기
               </Label>
             </div>
-            
+
             {preparationAdvanceAlarm.enabled && (
               <div className="space-y-2 pl-6">
-                <Label htmlFor="preparationAdvanceAlarmMinutes" className="text-sm">
+                <Label
+                  htmlFor="preparationAdvanceAlarmMinutes"
+                  className="text-sm"
+                >
                   몇 분 전에 알림받을까요?
                 </Label>
                 <div className="flex items-center space-x-2">
@@ -109,7 +121,11 @@ const AlarmSettings: React.FC<AlarmSettingsProps> = ({
                     max="60"
                     step="5"
                     value={preparationAdvanceAlarm.minutes}
-                    onChange={(e) => handlePreparationAdvanceAlarmMinutesChange(Number(e.target.value))}
+                    onChange={(e) =>
+                      handlePreparationAdvanceAlarmMinutesChange(
+                        Number(e.target.value)
+                      )
+                    }
                     className="w-20"
                   />
                   <span className="text-sm text-gray-600">분 전</span>
@@ -128,7 +144,7 @@ const AlarmSettings: React.FC<AlarmSettingsProps> = ({
             <AlertTriangle className="text-orange-600" size={16} />
             <span className="font-medium text-gray-900">출발 사전 알림</span>
           </div>
-          
+
           <div className="ml-6 space-y-3">
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -140,7 +156,7 @@ const AlarmSettings: React.FC<AlarmSettingsProps> = ({
                 출발 시간보다 미리 알림받기
               </Label>
             </div>
-            
+
             {advanceAlarm.enabled && (
               <div className="space-y-2 pl-6">
                 <Label htmlFor="advanceAlarmMinutes" className="text-sm">
@@ -154,7 +170,9 @@ const AlarmSettings: React.FC<AlarmSettingsProps> = ({
                     max="60"
                     step="5"
                     value={advanceAlarm.minutes}
-                    onChange={(e) => handleAdvanceAlarmMinutesChange(Number(e.target.value))}
+                    onChange={(e) =>
+                      handleAdvanceAlarmMinutesChange(Number(e.target.value))
+                    }
                     className="w-20"
                   />
                   <span className="text-sm text-gray-600">분 전</span>
@@ -204,4 +222,4 @@ const AlarmSettings: React.FC<AlarmSettingsProps> = ({
   );
 };
 
-export default AlarmSettings; 
+export default AlarmSettings;
