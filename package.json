@@ -9,8 +9,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "npm run build && echo '빌드 완료! dist 폴더를 웹 서버에 업로드하세요.'",
-    "prebuild": "cp src/sw.js public/sw.js"
+    "deploy": "npm run build && echo '빌드 완료! dist 폴더를 웹 서버에 업로드하세요.'"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -80,7 +79,6 @@
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.1",
-    "vite-plugin-pwa": "^1.0.1"
+    "vite": "^5.4.1"
   }
 }
