@@ -88,11 +88,26 @@ export function useSchedule() {
     ));
   }, []);
 
+  // 일괄 관리 기능
+  const toggleGroupActive = useCallback((scheduleIds: string[], active: boolean) => {
+    setSchedules(prev => prev.map(schedule => 
+      scheduleIds.includes(schedule.id)
+        ? { ...schedule, isActive: active }
+        : schedule
+    ));
+  }, []);
+
+  const deleteGroup = useCallback((scheduleIds: string[]) => {
+    setSchedules(prev => prev.filter(schedule => !scheduleIds.includes(schedule.id)));
+  }, []);
+
   return {
     schedules,
     addSchedule,
     deleteSchedule,
     updateSchedule,
-    toggleScheduleActive
+    toggleScheduleActive,
+    toggleGroupActive,
+    deleteGroup
   };
 }

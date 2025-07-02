@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { TransportType, Weekday, Schedule } from '@/types/schedule';
 
 const Index = () => {
-  const { schedules, addSchedule, deleteSchedule, updateSchedule, toggleScheduleActive } = useSchedule();
+  const { schedules, addSchedule, deleteSchedule, updateSchedule, toggleScheduleActive, toggleGroupActive, deleteGroup } = useSchedule();
   const { testAlarm, requestPermission, hasPermission } = useAlarm(schedules);
   const [showForm, setShowForm] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
@@ -168,6 +168,8 @@ const Index = () => {
               onEditSchedule={handleEditSchedule}
               onToggleActive={toggleScheduleActive}
               onTestAlarm={handleTestAlarm}
+              onToggleGroupActive={toggleGroupActive}
+              onDeleteGroup={deleteGroup}
             />
           </div>
         </div>
