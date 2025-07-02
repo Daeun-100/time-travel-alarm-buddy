@@ -1,6 +1,7 @@
 import React from 'react';
 import { MapPin, Clock, Train, Bus, Car, Bike, TrendingUp, AlertTriangle, Route } from 'lucide-react';
 import { TransportType } from '@/types/schedule';
+import { TRANSPORT_LABELS, TIME_SLOT_LABELS, DELAY_INFO } from '@/mocks/trafficData';
 
 interface TrafficDetailBoxProps {
   origin: string;
@@ -19,14 +20,6 @@ const transportIcons = {
   walk: MapPin
 };
 
-const transportLabels = {
-  subway: '지하철',
-  bus: '버스',
-  car: '자동차',
-  bicycle: '자전거',
-  walk: '도보'
-};
-
 const getRouteInfo = (origin: string, destination: string, transportType: TransportType) => {
   // 간단한 경로 정보 반환 (실제로는 더 복잡한 로직이 필요)
   return {
@@ -38,45 +31,14 @@ const getRouteInfo = (origin: string, destination: string, transportType: Transp
 };
 
 const getTimeSlotLabel = (hour: number) => {
-  if (hour >= 6 && hour < 12) return '아침 러시아워';
-  if (hour >= 12 && hour < 18) return '일반 시간대';
-  if (hour >= 18 && hour < 22) return '저녁 러시아워';
-  return '심야 시간대';
+  if (hour >= 6 && hour < 12) return TIME_SLOT_LABELS.morning;
+  if (hour >= 12 && hour < 18) return TIME_SLOT_LABELS.afternoon;
+  if (hour >= 18 && hour < 22) return TIME_SLOT_LABELS.evening;
+  return TIME_SLOT_LABELS.night;
 };
 
 const getDelayInfo = (timeSlot: string, transportType: TransportType) => {
-  const delays = {
-    '아침 러시아워': {
-      subway: { delay: 10, reason: '출근 시간 혼잡' },
-      bus: { delay: 15, reason: '교통 정체' },
-      car: { delay: 20, reason: '도로 정체' },
-      bicycle: { delay: 5, reason: '자전거도로 혼잡' },
-      walk: { delay: 0, reason: '영향 없음' }
-    },
-    '일반 시간대': {
-      subway: { delay: 5, reason: '일반 지연' },
-      bus: { delay: 8, reason: '일반 정체' },
-      car: { delay: 10, reason: '일반 정체' },
-      bicycle: { delay: 2, reason: '일반 혼잡' },
-      walk: { delay: 0, reason: '영향 없음' }
-    },
-    '저녁 러시아워': {
-      subway: { delay: 8, reason: '퇴근 시간 혼잡' },
-      bus: { delay: 12, reason: '교통 정체' },
-      car: { delay: 15, reason: '도로 정체' },
-      bicycle: { delay: 3, reason: '자전거도로 혼잡' },
-      walk: { delay: 0, reason: '영향 없음' }
-    },
-    '심야 시간대': {
-      subway: { delay: 0, reason: '원활한 교통' },
-      bus: { delay: 0, reason: '원활한 교통' },
-      car: { delay: 0, reason: '원활한 교통' },
-      bicycle: { delay: 0, reason: '원활한 교통' },
-      walk: { delay: 0, reason: '영향 없음' }
-    }
-  };
-
-  return delays[timeSlot as keyof typeof delays]?.[transportType] || { delay: 0, reason: '정보 없음' };
+  return DELAY_INFO[timeSlot as keyof typeof DELAY_INFO]?.[transportType] || { delay: 0, reason: '정보 없음' };
 };
 
 const TrafficDetailBox: React.FC<TrafficDetailBoxProps> = ({
@@ -99,11 +61,11 @@ const TrafficDetailBox: React.FC<TrafficDetailBoxProps> = ({
   // 대안 교통수단 제안
   const getAlternativeTransport = () => {
     const alternatives = {
-      subway: { type: 'bus' as TransportType, time: Math.round(baseTime * 1.3), label: '버스' },
-      bus: { type: 'subway' as TransportType, time: Math.round(baseTime * 0.8), label: '지하철' },
-      car: { type: 'subway' as TransportType, time: Math.round(baseTime * 0.7), label: '지하철' },
-      bicycle: { type: 'subway' as TransportType, time: Math.round(baseTime * 0.6), label: '지하철' },
-      walk: { type: 'subway' as TransportType, time: Math.round(baseTime * 0.3), label: '지하철' }
+      subway: { type: 'bus' as TransportType, time: Math.round(baseTime * 1.3), label: TRANSPORT_LABELS.bus },
+      bus: { type: 'subway' as TransportType, time: Math.round(baseTime * 0.8), label: TRANSPORT_LABELS.subway },
+      car: { type: 'subway' as TransportType, time: Math.round(baseTime * 0.7), label: TRANSPORT_LABELS.subway },
+      bicycle: { type: 'subway' as TransportType, time: Math.round(baseTime * 0.6), label: TRANSPORT_LABELS.subway },
+      walk: { type: 'subway' as TransportType, time: Math.round(baseTime * 0.3), label: TRANSPORT_LABELS.subway }
     };
     
     return alternatives[transportType] || null;
@@ -123,7 +85,7 @@ const TrafficDetailBox: React.FC<TrafficDetailBoxProps> = ({
         <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
           <div className="flex items-center space-x-2">
             <TransportIcon className="text-blue-600" size={16} />
-            <span className="font-medium text-blue-900">{transportLabels[transportType]}</span>
+            <span className="font-medium text-blue-900">{TRANSPORT_LABELS[transportType]}</span>
           </div>
           <div className="text-right">
             <div className="text-lg font-bold text-blue-900">{trafficDuration}분</div>

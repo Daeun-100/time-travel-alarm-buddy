@@ -9,13 +9,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { getTrafficTime } from '@/utils/timeCalculator';
+import { TRANSPORT_LABELS } from '@/mocks/trafficData';
 
 interface ScheduleCardProps {
   schedule: Schedule;
   onDelete: (id: string) => void;
   onEdit?: (schedule: Schedule) => void;
   onToggleActive?: (id: string) => void;
-  onTestAlarm?: (schedule: Schedule, type: 'preparation' | 'departure' | 'advance') => void;
+  onTestAlarm?: (schedule: Schedule, type: 'preparation' | 'departure' | 'advance' | 'preparation-advance') => void;
 }
 
 const transportIcons = {
@@ -24,14 +25,6 @@ const transportIcons = {
   car: Car,
   bicycle: Bike,
   walk: MapPin // Using MapPin for walk since it's more appropriate
-};
-
-const transportLabels = {
-  subway: '지하철',
-  bus: '버스',
-  car: '자동차',
-  bicycle: '자전거',
-  walk: '도보'
 };
 
 const ScheduleCard: React.FC<ScheduleCardProps> = ({ 
@@ -106,7 +99,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
               <TransportIcon size={16} />
-              <span>{transportLabels[schedule.transportType]}</span>
+              <span>{TRANSPORT_LABELS[schedule.transportType]}</span>
               <span>•</span>
               <span>준비시간 {schedule.preparationTime}분</span>
             </div>

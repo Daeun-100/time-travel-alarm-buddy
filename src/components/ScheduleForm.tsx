@@ -10,6 +10,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { TRANSPORT_LABELS, TRANSPORT_ICONS, POPULAR_ORIGINS, POPULAR_DESTINATIONS } from '@/mocks/trafficData';
 
 interface ScheduleFormProps {
   onSubmit: (origin: string, destination: string, arrivalTime: string, transportType: TransportType, preparationTime: number, weekdays?: Weekday[], selectedDates?: Date[]) => void;
@@ -26,25 +27,11 @@ interface ScheduleFormProps {
 }
 
 const transportOptions = [
-  { value: 'subway' as TransportType, label: '지하철', icon: Bus }, // Using Bus icon for subway
-  { value: 'bus' as TransportType, label: '버스', icon: Bus },
-  { value: 'car' as TransportType, label: '자동차', icon: Car },
-  { value: 'bicycle' as TransportType, label: '자전거', icon: Bike },
-  { value: 'walk' as TransportType, label: '도보', icon: MapPin }, // Using MapPin for walk
-];
-
-const popularOrigins = [
-  '잠실 루터회관',
-  '잠실역',
-  '강남역',
-  '홍대입구'
-];
-
-const popularDestinations = [
-  '행성대학교',
-  '강남역',
-  '홍대입구',
-  '신촌'
+  { value: 'subway' as TransportType, label: TRANSPORT_LABELS.subway, icon: Bus }, // Using Bus icon for subway
+  { value: 'bus' as TransportType, label: TRANSPORT_LABELS.bus, icon: Bus },
+  { value: 'car' as TransportType, label: TRANSPORT_LABELS.car, icon: Car },
+  { value: 'bicycle' as TransportType, label: TRANSPORT_LABELS.bicycle, icon: Bike },
+  { value: 'walk' as TransportType, label: TRANSPORT_LABELS.walk, icon: MapPin }, // Using MapPin for walk
 ];
 
 const ScheduleForm: React.FC<ScheduleFormProps> = ({ 
@@ -152,7 +139,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
           className="w-full"
         />
         <div className="flex flex-wrap gap-2 mt-2">
-          {popularOrigins.map((place) => (
+          {POPULAR_ORIGINS.map((place) => (
             <Button
               key={place}
               type="button"
@@ -178,7 +165,7 @@ const ScheduleForm: React.FC<ScheduleFormProps> = ({
           className="w-full"
         />
         <div className="flex flex-wrap gap-2 mt-2">
-          {popularDestinations.map((place) => (
+          {POPULAR_DESTINATIONS.map((place) => (
             <Button
               key={place}
               type="button"
