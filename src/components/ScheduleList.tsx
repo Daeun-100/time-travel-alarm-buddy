@@ -40,7 +40,7 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
     return Array.from(destSet).sort();
   }, [schedules]);
 
-  // 요일별 일정 분류
+  // 요일별 일정 분류 (반복 + 일회성 일정 모두 포함)
   const weekdayGroups = useMemo(() => {
     const groups: Record<Weekday, Schedule[]> = {
       monday: [],
@@ -53,8 +53,19 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
     };
 
     schedules.forEach(schedule => {
+      // 반복 일정 처리
       if (schedule.weekdays) {
         schedule.weekdays.forEach(weekday => {
+          groups[weekday].push(schedule);
+        });
+      }
+      
+      // 일회성 일정 처리
+      if (schedule.selectedDates) {
+        schedule.selectedDates.forEach(date => {
+          const dayOfWeek = date.getDay();
+          const weekdayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+          const weekday = weekdayMap[dayOfWeek] as Weekday;
           groups[weekday].push(schedule);
         });
       }
@@ -70,14 +81,23 @@ const ScheduleList: React.FC<ScheduleListProps> = ({
     if (activeFilter === 'destination' && selectedDestination !== 'all') {
       filtered = filtered.filter(s => s.destination === selectedDestination);
     } else if (activeFilter === 'weekday' && selectedWeekday !== 'all') {
-      filtered = filtered.filter(s => 
-        s.weekdays?.includes(selectedWeekday) || 
-        s.selectedDates?.some(date => {
-          const dayOfWeek = date.getDay();
-          const weekdayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-          return weekdayMap[dayOfWeek] === selectedWeekday;
-        })
-      );
+      filtered = filtered.filter(s => {
+        // 반복 일정 체크
+        if (s.weekdays?.includes(selectedWeekday)) {
+          return true;
+        }
+        
+        // 일회성 일정 체크
+        if (s.selectedDates) {
+          return s.selectedDates.some(date => {
+            const dayOfWeek = date.getDay();
+            const weekdayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            return weekdayMap[dayOfWeek] === selectedWeekday;
+          });
+        }
+        
+        return false;
+      });
     }
 
     // 날짜 + 출발 시간 순서대로 정렬 (오름차순)
